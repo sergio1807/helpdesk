@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Northgate Helpdesk</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f4f4f9;
+        }
+
+        h1 {
+            color: #2c3e50;
+        }
+
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        input,
+        textarea,
+        button {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            box-sizing: border-box;
+        }
+
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            cursor: pointer;
+            margin-top: 15px;
+        }
+
+        button:hover {
+            background-color: #2980b9;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        th,
+        td {
+            text-align: left;
+            padding: 12px;
+            border-bottom: 1px solid #ddd;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>Northgate Antigravity 🚀</h1>
+
+    <div class="card">
+        <h3>Nuevo Ticket</h3>
+        <form id="ticketForm">
+            <label>Título:</label>
+            <input type="text" id="titulo" required>
+            <label>Descripción:</label>
+            <textarea id="descripcion" required></textarea>
+            <label>ID Activo (Opcional):</label>
+            <input type="number" id="activo_id" placeholder="Ej: 1">
+            <button type="submit">Crear Ticket</button>
+        </form>
+    </div>
+
+    <div class="card">
+        <h3>Tickets Recientes</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Asunto</th>
+                    <th>Estado</th>
+                    <th>Activo</th>
+                </tr>
+            </thead>
+            <tbody id="ticketTable">
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        const API_URL = window.location.origin + "/api/tickets";
+
+        // Cargar tickets al iniciar
+        async function loadTickets() {
+            const res = await fetch(API_URL);
+            const data = await res.json();
+            const tbody = document.getElementById('ticketTable');
+            tbody.innerHTML = '';
+            data.forEach(t => {
+                const row = `<tr>
+                    <td>${t.id}</td>
+                    <td>${t.titulo}</td>
+                    <td>${t.estado}</td>
+                    <td>${t.activo || 'N/A'}</td>
+                </tr>`;
+                tbody.innerHTML += row;
+            });
+        }
+
+        // Crear ticket
+        document.getElementById('ticketForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const titulo = document.getElementById('titulo').value;
+            const descripcion = document.getElementById('descripcion').value;
+            const activo_id = document.getElementById('activo_id').value || null;
+
+            await fetch(API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ titulo, descripcion, activo_id })
+            });
+
+            document.getElementById('ticketForm').reset();
+            loadTickets();
+        });
+
+        loadTickets();
+    </script>
+</body>
+
+</html>
