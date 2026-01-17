@@ -8,4 +8,3 @@ python-jose
 passlib[bcrypt]
 pandas
 openpyxl
-python
