@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Northgate Login</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .login-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+            width: 400px;
+            padding: 40px;
+            text-align: center;
+        }
+
+        .brand-logo {
+            font-size: 2rem;
+            font-weight: 800;
+            background: -webkit-linear-gradient(#667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+
+        .btn-microsoft {
+            background-color: #2F2F2F;
+            color: white;
+            border: 1px solid #2F2F2F;
+            font-weight: 500;
+            padding: 12px;
+            transition: all 0.3s;
+        }
+
+        .btn-microsoft:hover {
+            background-color: #000;
+            transform: translateY(-2px);
+            color: white;
+        }
+
+        .divider {
+            display: flex;
+            align-items: center;
+            text-align: center;
+            margin: 20px 0;
+            color: #aaa;
+            font-size: 0.8rem;
+        }
+
+        .divider::before,
+        .divider::after {
+            content: '';
+            flex: 1;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .divider:not(:empty)::before {
+            margin-right: .5em;
+        }
+
+        .divider:not(:empty)::after {
+            margin-left: .5em;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="login-card">
+        <div class="mb-4">
+            <i class="fas fa-layer-group fa-3x text-primary mb-3"
+                style="background: -webkit-linear-gradient(#667eea, #764ba2); -webkit-background-clip: text; -webkit-text-fill-color: transparent;"></i>
+            <h1 class="brand-logo">Northgate</h1>
+            <p class="text-muted small">Portal de Gestión de Servicios TI</p>
+        </div>
+
+        <button class="btn btn-microsoft w-100 mb-3 rounded-pill" onclick="loginMicrosoft()">
+            <i class="fab fa-microsoft me-2"></i> Iniciar con Microsoft
+        </button>
+
+        <div class="divider">O ACCESO LOCAL</div>
+
+        <form onsubmit="loginLocal(event)">
+            <div class="mb-3 text-start">
+                <input type="email" class="form-control bg-light border-0 py-2" placeholder="usuario@northgate.com"
+                    required>
+            </div>
+            <div class="mb-4 text-start">
+                <input type="password" class="form-control bg-light border-0 py-2" placeholder="••••••••" required>
+            </div>
+            <button type="submit" class="btn btn-primary w-100 rounded-pill py-2 shadow-sm"
+                style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border:none;">
+                Entrar
+            </button>
+        </form>
+
+        <p class="mt-4 mb-0 text-muted" style="font-size: 0.7rem;">&copy; 2024 Northgate Enterprise Systems</p>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        function loginMicrosoft() {
+            // Aquí en el futuro conectaremos con Azure AD
+            Swal.fire({
+                icon: 'info',
+                title: 'Integración Microsoft',
+                text: 'En el futuro, esto redirigirá a login.microsoftonline.com',
+                confirmButtonColor: '#2F2F2F'
+            });
+        }
+
+        function loginLocal(e) {
+            e.preventDefault();
+            // Simulación de login exitoso
+            let timerInterval;
+            Swal.fire({
+                title: 'Autenticando...',
+                html: 'Validando credenciales en servidor seguro.',
+                timer: 1500,
+                timerProgressBar: true,
+                didOpen: () => { Swal.showLoading(); },
+                willClose: () => { clearInterval(timerInterval); }
+            }).then((result) => {
+                // Redirigir al Dashboard principal
+                window.location.href = 'index.html';
+            });
+        }
+    </script>
+</body>
+
+</html>

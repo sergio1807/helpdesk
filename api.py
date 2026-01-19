@@ -6,8 +6,15 @@ import os
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from typing import Optional
+import pandas as pd
+from io import BytesIO
+from fastapi.responses import StreamingResponse
 
 app = FastAPI(title="Northgate Helpdesk Chat")
+
+@app.get("/login")
+def read_login():
+    return FileResponse('login.html')
 
 app.add_middleware(
     CORSMiddleware,
@@ -152,6 +159,34 @@ def delete_activo(activo_id: int):
         cur.close()
         conn.close()
     return {"mensaje": "Borrado"}
+
+# --- NUEVA RUTA: EXPORTAR A EXCEL (Estilo Microsoft) ---
+@app.get("/api/export")
+def export_tickets():
+    conn = get_db_connection()
+    if not conn: raise HTTPException(status_code=500, detail="Error DB")
+    
+    # 1. Usamos Pandas para leer SQL directamente (¡Muy potente!)
+    query = """
+        SELECT t.id, t.titulo, t.descripcion, t.prioridad, t.estado, t.fecha_creacion, 
+               a.nombre as activo, a.serial
+        FROM tickets t 
+        LEFT JOIN activos1 a ON t.activo_id = a.id
+        ORDER BY t.id DESC
+    """
+    df = pd.read_sql(query, conn)
+    conn.close()
+
+    # 2. Crear un archivo Excel en memoria
+    output = BytesIO()
+    with pd.ExcelWriter(output, engine='openpyxl') as writer:
+        df.to_excel(writer, index=False, sheet_name='Reporte Tickets')
+    
+    output.seek(0)
+
+    # 3. Enviar el archivo al navegador
+    headers = {"Content-Disposition": "attachment; filename=reporte_northgate.xlsx"}
+    return StreamingResponse(output, headers=headers, media_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
 
 # --- CHAT / MENSAJES (NUEVO) ---
 
