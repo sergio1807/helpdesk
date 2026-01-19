@@ -12,9 +12,17 @@ from fastapi.responses import StreamingResponse
 
 app = FastAPI(title="Northgate Helpdesk Chat")
 
-@app.get("/login")
-def read_login():
+# --- RUTAS DE NAVEGACIÓN ---
+
+# 1. La ruta raíz ahora sirve el LOGIN (Antes servía index.html)
+@app.get("/")
+def read_root():
     return FileResponse('login.html')
+
+# 2. Nueva ruta para la aplicación principal (Dashboard)
+@app.get("/app")
+def read_dashboard():
+    return FileResponse('index.html')
 
 app.add_middleware(
     CORSMiddleware,

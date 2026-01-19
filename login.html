@@ -124,18 +124,17 @@
 
         function loginLocal(e) {
             e.preventDefault();
-            // Simulación de login exitoso
             let timerInterval;
             Swal.fire({
                 title: 'Autenticando...',
-                html: 'Validando credenciales en servidor seguro.',
+                html: 'Validando credenciales...',
                 timer: 1500,
                 timerProgressBar: true,
                 didOpen: () => { Swal.showLoading(); },
                 willClose: () => { clearInterval(timerInterval); }
             }).then((result) => {
-                // Redirigir al Dashboard principal
-                window.location.href = 'index.html';
+                // CAMBIO AQUÍ: Redirigir a la ruta '/app' en lugar de 'index.html'
+                window.location.href = '/app';
             });
         }
     </script>
