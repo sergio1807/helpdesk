@@ -4,26 +4,85 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Northgate Helpdesk</title>
+    <title>Northgate Helpdesk 3.0</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
         body {
-            background-color: #f8f9fa;
+            background-color: #f0f2f5;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
         .navbar {
-            background-color: #0d6efd;
+            background: linear-gradient(90deg, #004e92 0%, #000428 100%);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
         }
 
-        /* Azul Northgate */
-        .card {
-            margin-top: 20px;
-            border: none;
-            shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        .card-counter {
+            box-shadow: 2px 2px 10px #DADADA;
+            margin: 5px;
+            padding: 20px 10px;
+            background-color: #fff;
+            height: 100px;
+            border-radius: 5px;
+            transition: .3s linear all;
         }
 
-        .table thead {
-            background-color: #e9ecef;
+        .card-counter:hover {
+            box-shadow: 4px 4px 20px #DADADA;
+            transform: scale(1.02);
+        }
+
+        .card-counter i {
+            font-size: 5em;
+            opacity: 0.2;
+            position: absolute;
+            right: 15px;
+            top: 15px;
+        }
+
+        .card-counter .count-numbers {
+            position: absolute;
+            right: 35px;
+            top: 20px;
+            font-size: 32px;
+            display: block;
+            font-weight: bold;
+        }
+
+        .card-counter .count-name {
+            position: absolute;
+            right: 35px;
+            top: 65px;
+            font-style: italic;
+            text-transform: capitalize;
+            opacity: 0.5;
+            display: block;
+            font-size: 18px;
+        }
+
+        .bg-primary-light {
+            background-color: #e3f2fd;
+            color: #0d6efd;
+        }
+
+        .badge-alta {
+            background-color: #dc3545;
+        }
+
+        .badge-media {
+            background-color: #ffc107;
+            color: black;
+        }
+
+        .badge-baja {
+            background-color: #198754;
+        }
+
+        .table-row-closed {
+            opacity: 0.6;
+            background-color: #f8f9fa;
         }
     </style>
 </head>
@@ -32,66 +91,106 @@
 
     <nav class="navbar navbar-dark mb-4">
         <div class="container">
-            <a class="navbar-brand fw-bold" href="#">🚀 Northgate Helpdesk</a>
+            <a class="navbar-brand fw-bold" href="#"><i class="fas fa-rocket me-2"></i> Northgate Helpdesk</a>
+            <span class="text-white small">Gestión de TI</span>
         </div>
     </nav>
 
     <div class="container">
 
-        <ul class="nav nav-tabs" id="myTab" role="tablist">
-            <li class="nav-item" role="presentation">
-                <button class="nav-link active" id="tickets-tab" data-bs-toggle="tab" data-bs-target="#tickets"
-                    type="button">🎫 Tickets</button>
+        <div class="row mb-4 text-center">
+            <div class="col-md-4">
+                <div class="card-counter border-start border-4 border-warning">
+                    <i class="fa fa-ticket-alt text-warning"></i>
+                    <span class="count-numbers" id="count-abiertos">0</span>
+                    <span class="count-name">Tickets Abiertos</span>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card-counter border-start border-4 border-success">
+                    <i class="fa fa-check-circle text-success"></i>
+                    <span class="count-numbers" id="count-cerrados">0</span>
+                    <span class="count-name">Tickets Cerrados</span>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card-counter border-start border-4 border-primary">
+                    <i class="fa fa-laptop text-primary"></i>
+                    <span class="count-numbers" id="count-activos">0</span>
+                    <span class="count-name">Total Activos</span>
+                </div>
+            </div>
+        </div>
+
+        <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
+            <li class="nav-item">
+                <button class="nav-link active" data-bs-toggle="pill" data-bs-target="#pills-tickets"><i
+                        class="fas fa-list me-2"></i>Tickets</button>
             </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link" id="activos-tab" data-bs-toggle="tab" data-bs-target="#activos"
-                    type="button">💻 Gestión de Activos</button>
+            <li class="nav-item ms-2">
+                <button class="nav-link" data-bs-toggle="pill" data-bs-target="#pills-activos"><i
+                        class="fas fa-server me-2"></i>Activos</button>
             </li>
         </ul>
 
-        <div class="tab-content" id="myTabContent">
+        <div class="tab-content" id="pills-tabContent">
 
-            <div class="tab-pane fade show active" id="tickets" role="tabpanel">
+            <div class="tab-pane fade show active" id="pills-tickets">
                 <div class="row">
-                    <div class="col-md-4">
-                        <div class="card p-3 shadow-sm">
-                            <h5 class="card-title mb-3">Nuevo Ticket</h5>
-                            <form id="ticketForm">
-                                <div class="mb-3">
-                                    <label class="form-label">Asunto</label>
-                                    <input type="text" class="form-control" id="titulo" required
-                                        placeholder="Ej: Fallo de red">
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label">Descripción</label>
-                                    <textarea class="form-control" id="descripcion" rows="3" required></textarea>
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label">Activo Relacionado</label>
-                                    <select class="form-select" id="activoSelect">
-                                        <option value="">Seleccione un activo (Opcional)</option>
-                                    </select>
-                                </div>
-                                <button type="submit" class="btn btn-primary w-100">Crear Ticket</button>
-                            </form>
+                    <div class="col-md-4 mb-3">
+                        <div class="card shadow-sm">
+                            <div class="card-header bg-white fw-bold"><i class="fas fa-plus-circle me-1"></i> Nuevo
+                                Ticket</div>
+                            <div class="card-body">
+                                <form id="ticketForm">
+                                    <div class="mb-2">
+                                        <label class="form-label small">Asunto</label>
+                                        <input type="text" class="form-control" id="titulo" required>
+                                    </div>
+                                    <div class="mb-2">
+                                        <label class="form-label small">Prioridad</label>
+                                        <select class="form-select" id="prioridad">
+                                            <option value="alta">🔴 Alta</option>
+                                            <option value="media" selected>🟡 Media</option>
+                                            <option value="baja">🟢 Baja</option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-2">
+                                        <label class="form-label small">Descripción</label>
+                                        <textarea class="form-control" id="descripcion" rows="3" required></textarea>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label class="form-label small">Activo (Opcional)</label>
+                                        <select class="form-select" id="activoSelect">
+                                            <option value="">Cargando...</option>
+                                        </select>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary w-100"><i
+                                            class="fas fa-paper-plane"></i> Crear</button>
+                                </form>
+                            </div>
                         </div>
                     </div>
 
                     <div class="col-md-8">
-                        <div class="card p-3 shadow-sm">
-                            <h5 class="card-title">Listado de Tickets</h5>
+                        <div class="card shadow-sm">
+                            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                                <span class="fw-bold">Bandeja de Entrada</span>
+                                <input type="text" id="buscador" class="form-control form-control-sm w-50"
+                                    placeholder="🔍 Buscar ticket...">
+                            </div>
                             <div class="table-responsive">
-                                <table class="table table-hover align-middle">
-                                    <thead>
+                                <table class="table table-hover align-middle mb-0">
+                                    <thead class="table-light">
                                         <tr>
-                                            <th>#</th>
-                                            <th>Asunto</th>
+                                            <th>ID</th>
+                                            <th>Detalle</th>
                                             <th>Activo</th>
                                             <th>Estado</th>
+                                            <th class="text-end">Acciones</th>
                                         </tr>
                                     </thead>
-                                    <tbody id="ticketTable">
-                                    </tbody>
+                                    <tbody id="ticketTable"></tbody>
                                 </table>
                             </div>
                         </div>
@@ -99,51 +198,38 @@
                 </div>
             </div>
 
-            <div class="tab-pane fade" id="activos" role="tabpanel">
-                <div class="row mt-3">
-                    <div class="col-md-4">
-                        <div class="card p-3 shadow-sm">
-                            <h5 class="card-title text-success">Registrar Activo</h5>
-                            <form id="activoForm">
-                                <div class="mb-3">
-                                    <label class="form-label">Nombre del Equipo</label>
-                                    <input type="text" class="form-control" id="nombreActivo" required
-                                        placeholder="Ej: Laptop Dell XPS">
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label">Tipo</label>
-                                    <select class="form-select" id="tipoActivo">
-                                        <option>Laptop</option>
-                                        <option>Monitor</option>
-                                        <option>Impresora</option>
-                                        <option>Móvil</option>
-                                        <option>Otro</option>
-                                    </select>
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label">Serial / Código</label>
-                                    <input type="text" class="form-control" id="serialActivo" required
-                                        placeholder="NG-2024-001">
-                                </div>
-                                <button type="submit" class="btn btn-success w-100">Guardar Activo</button>
-                            </form>
+            <div class="tab-pane fade" id="pills-activos">
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <div class="card shadow-sm">
+                            <div class="card-header bg-white fw-bold"><i class="fas fa-laptop-medical me-1"></i> Nuevo
+                                Activo</div>
+                            <div class="card-body">
+                                <form id="activoForm">
+                                    <div class="mb-2"><input type="text" class="form-control" id="nomActivo"
+                                            placeholder="Nombre (ej: Monitor)" required></div>
+                                    <div class="mb-2"><input type="text" class="form-control" id="tipoActivo"
+                                            placeholder="Tipo (ej: Periférico)" required></div>
+                                    <div class="mb-3"><input type="text" class="form-control" id="serActivo"
+                                            placeholder="Serial (ej: NG-001)" required></div>
+                                    <button type="submit" class="btn btn-success w-100"><i class="fas fa-save"></i>
+                                        Guardar</button>
+                                </form>
+                            </div>
                         </div>
                     </div>
-
                     <div class="col-md-8">
-                        <div class="card p-3 shadow-sm">
-                            <h5 class="card-title">Inventario de Activos</h5>
+                        <div class="card shadow-sm p-3">
                             <table class="table table-striped">
                                 <thead>
                                     <tr>
                                         <th>ID</th>
-                                        <th>Nombre</th>
-                                        <th>Tipo</th>
+                                        <th>Equipo</th>
                                         <th>Serial</th>
+                                        <th class="text-end">Acción</th>
                                     </tr>
                                 </thead>
-                                <tbody id="activosTable">
-                                </tbody>
+                                <tbody id="activosTable"></tbody>
                             </table>
                         </div>
                     </div>
@@ -153,118 +239,145 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
     <script>
-        const API_URL = window.location.origin + "/api";
+        const API = window.location.origin + "/api";
 
-        // --- FUNCIONES DE CARGA ---
+        // --- CARGAR DATOS ---
+        async function loadData() {
+            // 1. Cargar Activos
+            const resActivos = await fetch(API + '/activos');
+            const activos = await resActivos.json();
 
-        async function loadTickets() {
-            try {
-                const res = await fetch(`${API_URL}/tickets`);
-                const tickets = await res.json();
-                const tbody = document.getElementById('ticketTable');
-                tbody.innerHTML = '';
+            const actTable = document.getElementById('activosTable');
+            const actSelect = document.getElementById('activoSelect');
 
-                if (tickets.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted">No hay tickets registrados</td></tr>';
-                    return;
-                }
+            actTable.innerHTML = '';
+            actSelect.innerHTML = '<option value="">Seleccione activo...</option>';
+            document.getElementById('count-activos').innerText = activos.length;
 
-                tickets.forEach(t => {
-                    const badgeClass = t.estado === 'abierto' ? 'bg-warning text-dark' : 'bg-success';
-                    const row = `<tr>
-                        <td><strong>${t.id}</strong></td>
+            activos.forEach(a => {
+                actSelect.innerHTML += `<option value="${a.id}">${a.nombre}</option>`;
+                actTable.innerHTML += `
+                    <tr>
+                        <td>${a.id}</td>
+                        <td>${a.nombre}<br><small class="text-muted">${a.tipo}</small></td>
+                        <td><code>${a.serial}</code></td>
+                        <td class="text-end"><button onclick="borrarActivo(${a.id})" class="btn btn-sm btn-outline-danger"><i class="fas fa-trash"></i></button></td>
+                    </tr>
+                `;
+            });
+
+            // 2. Cargar Tickets
+            const resTickets = await fetch(API + '/tickets');
+            const tickets = await resTickets.json();
+            renderTickets(tickets);
+        }
+
+        function renderTickets(tickets) {
+            const tbody = document.getElementById('ticketTable');
+            tbody.innerHTML = '';
+            let abiertos = 0, cerrados = 0;
+
+            tickets.forEach(t => {
+                if (t.estado === 'abierto') abiertos++; else cerrados++;
+
+                const badgePrio = t.prioridad === 'alta' ? 'badge-alta' : (t.prioridad === 'media' ? 'badge-media' : 'badge-baja');
+                const rowClass = t.estado === 'cerrado' ? 'table-row-closed' : '';
+                const btnAction = t.estado === 'abierto'
+                    ? `<button onclick="cambiarEstado(${t.id}, 'cerrado')" class="btn btn-sm btn-success" title="Cerrar Ticket"><i class="fas fa-check"></i></button>`
+                    : `<button onclick="cambiarEstado(${t.id}, 'abierto')" class="btn btn-sm btn-secondary" title="Reabrir Ticket"><i class="fas fa-undo"></i></button>`;
+
+                tbody.innerHTML += `
+                    <tr class="${rowClass}">
+                        <td>#${t.id}</td>
                         <td>
-                            <div class="fw-bold">${t.titulo}</div>
+                            <div class="fw-bold">${t.titulo} <span class="badge ${badgePrio} rounded-pill" style="font-size:0.7em">${t.prioridad}</span></div>
                             <small class="text-muted">${t.descripcion}</small>
                         </td>
-                        <td>${t.activo_nombre ? `<span class="badge bg-info text-dark">${t.activo_nombre}</span>` : '<span class="text-muted">-</span>'}</td>
-                        <td><span class="badge ${badgeClass}">${t.estado}</span></td>
-                    </tr>`;
-                    tbody.innerHTML += row;
-                });
-            } catch (error) {
-                console.error("Error cargando tickets:", error);
-            }
-        }
-
-        async function loadActivos() {
-            try {
-                const res = await fetch(`${API_URL}/activos`);
-                const activos = await res.json();
-
-                // Llenar tabla de Activos
-                const tbody = document.getElementById('activosTable');
-                tbody.innerHTML = '';
-
-                // Llenar Dropdown de Tickets
-                const select = document.getElementById('activoSelect');
-                select.innerHTML = '<option value="">Seleccione un activo (Opcional)</option>';
-
-                activos.forEach(a => {
-                    // Tabla
-                    tbody.innerHTML += `<tr>
-                        <td>${a.id}</td>
-                        <td>${a.nombre}</td>
-                        <td>${a.tipo}</td>
-                        <td><code>${a.serial}</code></td>
-                    </tr>`;
-
-                    // Dropdown
-                    select.innerHTML += `<option value="${a.id}">${a.nombre} (${a.serial})</option>`;
-                });
-            } catch (error) {
-                console.error("Error cargando activos:", error);
-            }
-        }
-
-        // --- EVENTOS DE FORMULARIOS ---
-
-        // Crear Ticket
-        document.getElementById('ticketForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const titulo = document.getElementById('titulo').value;
-            const descripcion = document.getElementById('descripcion').value;
-            const activo_id = document.getElementById('activoSelect').value || null; // Si está vacío envía null
-
-            const btn = e.target.querySelector('button');
-            btn.disabled = true;
-            btn.textContent = "Guardando...";
-
-            await fetch(`${API_URL}/tickets`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ titulo, descripcion, activo_id })
+                        <td>${t.activo_nombre ? `<i class="fas fa-laptop text-primary"></i> ${t.activo_nombre}` : '-'}</td>
+                        <td><span class="badge ${t.estado === 'abierto' ? 'bg-warning text-dark' : 'bg-secondary'}">${t.estado}</span></td>
+                        <td class="text-end">
+                            ${btnAction}
+                            <button onclick="borrarTicket(${t.id})" class="btn btn-sm btn-outline-danger"><i class="fas fa-trash"></i></button>
+                        </td>
+                    </tr>
+                `;
             });
 
+            document.getElementById('count-abiertos').innerText = abiertos;
+            document.getElementById('count-cerrados').innerText = cerrados;
+        }
+
+        // --- ACCIONES ---
+
+        async function crearTicket(e) {
+            e.preventDefault();
+            const data = {
+                titulo: document.getElementById('titulo').value,
+                descripcion: document.getElementById('descripcion').value,
+                prioridad: document.getElementById('prioridad').value,
+                activo_id: document.getElementById('activoSelect').value || null
+            };
+            await fetch(API + '/tickets', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
             document.getElementById('ticketForm').reset();
-            btn.disabled = false;
-            btn.textContent = "Crear Ticket";
-            loadTickets(); // Recargar lista inmediatamente
-        });
+            Swal.fire('¡Listo!', 'Ticket creado', 'success');
+            loadData();
+        }
 
-        // Crear Activo
-        document.getElementById('activoForm').addEventListener('submit', async (e) => {
+        async function crearActivo(e) {
             e.preventDefault();
-            const nombre = document.getElementById('nombreActivo').value;
-            const tipo = document.getElementById('tipoActivo').value;
-            const serial = document.getElementById('serialActivo').value;
-
-            await fetch(`${API_URL}/activos`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ nombre, tipo, serial })
-            });
-
+            const data = {
+                nombre: document.getElementById('nomActivo').value,
+                tipo: document.getElementById('tipoActivo').value,
+                serial: document.getElementById('serActivo').value
+            };
+            await fetch(API + '/activos', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
             document.getElementById('activoForm').reset();
-            loadActivos(); // Recargar lista y dropdown
-            alert("Activo creado correctamente");
+            Swal.fire('¡Listo!', 'Activo registrado', 'success');
+            loadData();
+        }
+
+        async function cambiarEstado(id, nuevoEstado) {
+            await fetch(`${API}/tickets/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ estado: nuevoEstado }) });
+            loadData();
+        }
+
+        async function borrarTicket(id) {
+            const result = await Swal.fire({ title: '¿Estás seguro?', text: "No podrás revertir esto", icon: 'warning', showCancelButton: true, confirmButtonText: 'Sí, borrar' });
+            if (result.isConfirmed) {
+                await fetch(`${API}/tickets/${id}`, { method: 'DELETE' });
+                loadData();
+                Swal.fire('Borrado', 'El ticket ha sido eliminado', 'success');
+            }
+        }
+
+        async function borrarActivo(id) {
+            const result = await Swal.fire({ title: '¿Borrar activo?', text: "Se eliminará si no tiene tickets asociados", icon: 'warning', showCancelButton: true });
+            if (result.isConfirmed) {
+                const res = await fetch(`${API}/activos/${id}`, { method: 'DELETE' });
+                if (res.ok) {
+                    loadData();
+                    Swal.fire('Borrado', 'Activo eliminado', 'success');
+                } else {
+                    Swal.fire('Error', 'No se puede borrar: tiene tickets asociados', 'error');
+                }
+            }
+        }
+
+        // Buscador simple en frontend
+        document.getElementById('buscador').addEventListener('keyup', (e) => {
+            const term = e.target.value.toLowerCase();
+            const rows = document.querySelectorAll('#ticketTable tr');
+            rows.forEach(row => {
+                const text = row.innerText.toLowerCase();
+                row.style.display = text.includes(term) ? '' : 'none';
+            });
         });
 
-        // Inicializar
-        loadTickets();
-        loadActivos();
+        // Listeners e Inicio
+        document.getElementById('ticketForm').addEventListener('submit', crearTicket);
+        document.getElementById('activoForm').addEventListener('submit', crearActivo);
+        loadData();
     </script>
 </body>
 

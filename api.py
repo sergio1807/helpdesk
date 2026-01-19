@@ -7,9 +7,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from typing import Optional
 
-app = FastAPI(title="Northgate Helpdesk Pro")
+app = FastAPI(title="Northgate Helpdesk V3")
 
-# Configuración CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -25,14 +24,18 @@ def get_db_connection():
         conn = psycopg2.connect(DATABASE_URL, cursor_factory=RealDictCursor)
         return conn
     except Exception as e:
-        print(f"Error conectando a la BD: {e}")
+        print(f"Error BD: {e}")
         return None
 
-# --- MODELOS DE DATOS ---
+# --- MODELOS ---
 class Ticket(BaseModel):
     titulo: str
     descripcion: str
-    activo_id: Optional[int] = None # Puede ser nulo si no aplica a un activo
+    prioridad: str = "media"
+    activo_id: Optional[int] = None
+
+class TicketEstado(BaseModel):
+    estado: str
 
 class Activo(BaseModel):
     nombre: str
@@ -45,25 +48,24 @@ class Activo(BaseModel):
 def read_root():
     return FileResponse('index.html')
 
-# 1. GET TICKETS
+# TICKETS: Ver todos
 @app.get("/api/tickets")
 def get_tickets():
     conn = get_db_connection()
     if not conn: return []
     cur = conn.cursor()
-    # Traemos el nombre del activo usando JOIN
     cur.execute("""
-        SELECT t.id, t.titulo, t.descripcion, t.estado, a.nombre as activo_nombre 
+        SELECT t.*, a.nombre as activo_nombre, a.serial as activo_serial
         FROM tickets t 
         LEFT JOIN activos1 a ON t.activo_id = a.id
-        ORDER BY t.id DESC
+        ORDER BY CASE WHEN t.estado = 'abierto' THEN 1 ELSE 2 END, t.id DESC
     """)
     tickets = cur.fetchall()
     cur.close()
     conn.close()
     return tickets
 
-# 2. POST TICKET
+# TICKETS: Crear
 @app.post("/api/tickets")
 def create_ticket(ticket: Ticket):
     conn = get_db_connection()
@@ -71,12 +73,11 @@ def create_ticket(ticket: Ticket):
     cur = conn.cursor()
     try:
         cur.execute(
-            "INSERT INTO tickets (titulo, descripcion, activo_id) VALUES (%s, %s, %s) RETURNING id",
-            (ticket.titulo, ticket.descripcion, ticket.activo_id)
+            "INSERT INTO tickets (titulo, descripcion, prioridad, activo_id) VALUES (%s, %s, %s, %s) RETURNING id",
+            (ticket.titulo, ticket.descripcion, ticket.prioridad, ticket.activo_id)
         )
-        new_id = cur.fetchone()['id']
         conn.commit()
-        return {"id": new_id, "mensaje": "Ticket creado"}
+        return {"mensaje": "Creado"}
     except Exception as e:
         conn.rollback()
         raise HTTPException(status_code=500, detail=str(e))
@@ -84,7 +85,29 @@ def create_ticket(ticket: Ticket):
         cur.close()
         conn.close()
 
-# 3. GET ACTIVOS (Para llenar la lista y el dropdown)
+# TICKETS: Actualizar Estado (Cerrar/Reabrir)
+@app.put("/api/tickets/{ticket_id}")
+def update_ticket_status(ticket_id: int, estado: TicketEstado):
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("UPDATE tickets SET estado = %s WHERE id = %s", (estado.estado, ticket_id))
+    conn.commit()
+    cur.close()
+    conn.close()
+    return {"mensaje": "Actualizado"}
+
+# TICKETS: Borrar
+@app.delete("/api/tickets/{ticket_id}")
+def delete_ticket(ticket_id: int):
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute("DELETE FROM tickets WHERE id = %s", (ticket_id,))
+    conn.commit()
+    cur.close()
+    conn.close()
+    return {"mensaje": "Borrado"}
+
+# ACTIVOS: Ver y Crear
 @app.get("/api/activos")
 def get_activos():
     conn = get_db_connection()
@@ -96,23 +119,36 @@ def get_activos():
     conn.close()
     return activos
 
-# 4. POST ACTIVO (Para crear nuevos activos)
 @app.post("/api/activos")
 def create_activo(activo: Activo):
     conn = get_db_connection()
-    if not conn: raise HTTPException(status_code=500, detail="Error DB")
     cur = conn.cursor()
     try:
         cur.execute(
             "INSERT INTO activos1 (nombre, tipo, serial) VALUES (%s, %s, %s) RETURNING id",
             (activo.nombre, activo.tipo, activo.serial)
         )
-        new_id = cur.fetchone()['id']
         conn.commit()
-        return {"id": new_id, "mensaje": "Activo creado"}
+        return {"mensaje": "Activo creado"}
     except Exception as e:
         conn.rollback()
         raise HTTPException(status_code=500, detail=str(e))
     finally:
         cur.close()
         conn.close()
+
+# ACTIVOS: Borrar
+@app.delete("/api/activos/{activo_id}")
+def delete_activo(activo_id: int):
+    conn = get_db_connection()
+    cur = conn.cursor()
+    try:
+        cur.execute("DELETE FROM activos1 WHERE id = %s", (activo_id,))
+        conn.commit()
+    except Exception as e:
+        # Probablemente tiene tickets asociados
+        raise HTTPException(status_code=400, detail="No se puede borrar activo con tickets asociados")
+    finally:
+        cur.close()
+        conn.close()
+    return {"mensaje": "Borrado"}
