@@ -145,6 +145,37 @@
         [data-bs-theme="dark"] .table {
             --bs-table-bg: transparent;
         }
+
+        /* --- CORRECCIONES MODO OSCURO PARA EL CHAT --- */
+        [data-bs-theme="dark"] .modal-content {
+            background-color: var(--bs-body-bg);
+            /* Usa el fondo oscuro principal */
+        }
+
+        [data-bs-theme="dark"] .modal-header,
+        [data-bs-theme="dark"] .modal-body .p-3.bg-white {
+            background-color: var(--bs-tertiary-bg) !important;
+            /* Cabecera y pie del chat oscuros */
+            border-color: var(--bs-border-color);
+        }
+
+        [data-bs-theme="dark"] .chat-messages {
+            background-color: var(--bs-body-bg);
+            /* Fondo del área de mensajes oscuro */
+        }
+
+        [data-bs-theme="dark"] .message-wrapper.other .message-bubble {
+            background-color: var(--bs-tertiary-bg);
+            /* Burbujas del cliente más oscuras */
+            border-color: var(--bs-border-color);
+        }
+
+        [data-bs-theme="dark"] #chatUser,
+        [data-bs-theme="dark"] #chatInput {
+            background-color: var(--bs-tertiary-bg) !important;
+            /* Inputs del chat oscuros */
+            color: var(--bs-body-color);
+        }
     </style>
 </head>
 
