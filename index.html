@@ -213,10 +213,15 @@
                 <li class="nav-item ms-2"><button class="nav-link rounded-pill px-4" data-bs-toggle="pill"
                         data-bs-target="#tab-activos"><i class="fas fa-laptop me-2"></i>Inventario</button></li>
             </ul>
-            <button class="btn btn-primary rounded-pill shadow-sm px-4" onclick="mostrarModalTicket()"><i
-                    class="fas fa-plus me-2"></i>Nuevo Ticket</button>
-            <button class="btn btn-success rounded-pill shadow-sm px-4" onclick="mostrarModalTicket()"><i
-                    class="fas fa-file-excel me-2"></i>Excel</button>
+            <div class="d-flex gap-2">
+                <a href="/api/export" class="btn btn-success rounded-pill shadow-sm px-3" target="_blank">
+                    <i class="fas fa-file-excel me-2"></i>Excel
+                </a>
+
+                <button class="btn btn-primary rounded-pill shadow-sm px-4" onclick="mostrarModalTicket()">
+                    <i class="fas fa-plus me-2"></i>Nuevo Ticket
+                </button>
+            </div>
         </div>
 
         <div class="tab-content">
