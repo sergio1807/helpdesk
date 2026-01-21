@@ -13,7 +13,6 @@
     <style>
         :root {
             --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            --sidebar-width: 260px;
         }
 
         body {
@@ -22,7 +21,7 @@
             transition: 0.3s;
         }
 
-        /* Navbar & Branding */
+        /* Navbar */
         .navbar-custom {
             background: var(--primary-gradient);
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
@@ -34,7 +33,7 @@
             font-size: 1.5rem;
         }
 
-        /* Tarjetas de Estadísticas */
+        /* Tarjetas y Tablas */
         .stat-card {
             border: none;
             border-radius: 15px;
@@ -56,7 +55,6 @@
             transform: rotate(-15deg);
         }
 
-        /* Tablas */
         .table-hover tbody tr:hover {
             background-color: rgba(102, 126, 234, 0.05);
             cursor: pointer;
@@ -75,12 +73,11 @@
             color: #555;
         }
 
-        /* Chat Estilo WhatsApp */
+        /* CHAT */
         .chat-container {
             height: 450px;
             display: flex;
             flex-direction: column;
-            background-color: var(--bs-tertiary-bg);
             border-radius: 10px;
             overflow: hidden;
         }
@@ -115,16 +112,17 @@
             box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
         }
 
-        .message-wrapper.other .message-bubble {
-            background-color: var(--bs-body-bg);
-            border-bottom-left-radius: 4px;
-            border: 1px solid var(--bs-border-color);
-        }
-
         .message-wrapper.me .message-bubble {
             background: var(--primary-gradient);
             color: white;
             border-bottom-right-radius: 4px;
+        }
+
+        /* ESTILOS POR DEFECTO (MODO CLARO) */
+        .message-wrapper.other .message-bubble {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            color: #000;
         }
 
         .msg-time {
@@ -133,69 +131,51 @@
             opacity: 0.7;
         }
 
-        .message-wrapper.me .msg-time {
-            text-align: right;
-        }
-
-        /* Modo Oscuro Ajustes */
+        /* --- MODO OSCURO (REGLAS FORZADAS) --- */
         [data-bs-theme="dark"] .stat-card {
             background-color: #2b3035;
         }
 
-        [data-bs-theme="dark"] .table {
-            --bs-table-bg: transparent;
-        }
+        /* Forzamos el fondo oscuro en el modal y eliminamos los fondos blancos de Bootstrap */
+        [data-bs-theme="dark"] .modal-content,
+        [data-bs-theme="dark"] .modal-body,
+        [data-bs-theme="dark"] .modal-header,
+        [data-bs-theme="dark"] .modal-footer,
+        [data-bs-theme="dark"] .bg-white,
+        /* Aplasta la clase bg-white */
+        [data-bs-theme="dark"] .bg-light
 
-
-        /* --- FIX AGRESIVO MODO OSCURO --- */
-
-        /* 1. Fondo del Modal y Textos */
-        [data-bs-theme="dark"] .modal-content {
+        /* Aplasta la clase bg-light */
+            {
             background-color: #212529 !important;
-            /* Fondo gris oscuro */
-            color: #e9ecef !important;
-            /* Texto claro */
-            border: 1px solid #495057;
+            color: #f8f9fa !important;
+            border-color: #373b3e !important;
         }
 
-        /* 2. Cabecera del Modal */
-        [data-bs-theme="dark"] .modal-header {
-            border-bottom: 1px solid #495057 !important;
-            background-color: #212529 !important;
-        }
-
-        [data-bs-theme="dark"] .btn-close {
-            filter: invert(1) grayscale(100%) brightness(200%);
-            /* Hace la X blanca */
-        }
-
-        /* 3. Área de Chat (Fondo) */
+        /* Área de mensajes oscura */
         [data-bs-theme="dark"] .chat-messages {
             background-color: #1a1d20 !important;
-            /* Un poco más oscuro que el modal */
-            border: 1px solid #343a40;
         }
 
-        /* 4. Burbujas de Mensajes (Cliente/Otro) */
+        /* Burbujas del cliente en oscuro */
         [data-bs-theme="dark"] .message-wrapper.other .message-bubble {
             background-color: #343a40 !important;
-            /* Gris medio */
             color: #fff !important;
-            border: none !important;
-        }
-
-        /* 5. Inputs y Selects del Chat */
-        [data-bs-theme="dark"] #chatInput,
-        [data-bs-theme="dark"] #chatUser {
-            background-color: #2b3035 !important;
             border: 1px solid #495057 !important;
-            color: #fff !important;
         }
 
-        /* 6. Fondo del área de escribir */
-        [data-bs-theme="dark"] .modal-body .bg-white {
-            background-color: #212529 !important;
-            border-top: 1px solid #495057 !important;
+        /* Inputs oscuros */
+        [data-bs-theme="dark"] input,
+        [data-bs-theme="dark"] select,
+        [data-bs-theme="dark"] textarea {
+            background-color: #2b3035 !important;
+            color: #fff !important;
+            border: 1px solid #495057 !important;
+        }
+
+        /* Botón de cerrar modal blanco */
+        [data-bs-theme="dark"] .btn-close {
+            filter: invert(1) grayscale(100%) brightness(200%);
         }
     </style>
 </head>
