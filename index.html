@@ -4,147 +4,123 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Northgate Enterprise Helpdesk</title>
+    <title>Northgate Workspace</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
     <style>
         :root {
-            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --primary-gradient: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
         }
 
         body {
             font-family: 'Inter', sans-serif;
             background-color: var(--bs-body-bg);
-            transition: 0.3s;
         }
 
         .navbar-custom {
             background: var(--primary-gradient);
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
         }
 
         .stat-card {
             border: none;
-            border-radius: 15px;
+            border-radius: 12px;
             transition: transform 0.2s;
         }
 
         .stat-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            transform: translateY(-3px);
         }
 
-        .avatar-circle {
+        .avatar {
             width: 35px;
             height: 35px;
-            background-color: #e9ecef;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: bold;
-            color: #555;
         }
 
-        /* CHAT MEJORADO */
-        .chat-messages {
+        /* CHAT */
+        .chat-container {
+            height: 500px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chat-box {
             flex: 1;
             overflow-y: auto;
             padding: 20px;
+            background: #f4f6f8;
             display: flex;
             flex-direction: column;
-            gap: 15px;
-            background-color: #f0f2f5;
-        }
-
-        .message-wrapper {
-            display: flex;
-            align-items: flex-end;
             gap: 10px;
+        }
+
+        .msg {
             max-width: 80%;
-        }
-
-        .message-wrapper.me {
-            align-self: flex-end;
-            flex-direction: row-reverse;
-        }
-
-        .message-bubble {
             padding: 10px 15px;
-            border-radius: 18px;
+            border-radius: 15px;
+            font-size: 0.9rem;
             position: relative;
-            font-size: 0.95rem;
-            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
         }
 
-        .message-wrapper.me .message-bubble {
-            background: var(--primary-gradient);
+        .msg.me {
+            align-self: flex-end;
+            background: #007bff;
             color: white;
-            border-bottom-right-radius: 4px;
+            border-bottom-right-radius: 2px;
         }
 
-        .message-wrapper.other .message-bubble {
-            background-color: #ffffff;
-            color: #000;
-            border-bottom-left-radius: 4px;
+        .msg.other {
+            align-self: flex-start;
+            background: white;
+            color: black;
+            border-bottom-left-radius: 2px;
+            border: 1px solid #ddd;
         }
 
-        /* Eventos de Sistema (Centrados) */
-        .message-system {
+        .msg.system {
             align-self: center;
-            background-color: rgba(0, 0, 0, 0.05);
-            padding: 5px 15px;
-            border-radius: 20px;
-            font-size: 0.8rem;
+            background: rgba(0, 0, 0, 0.05);
             color: #666;
-            font-weight: 500;
-            margin: 10px 0;
-            border: 1px solid rgba(0, 0, 0, 0.1);
+            font-size: 0.75rem;
+            border-radius: 20px;
+            padding: 5px 15px;
+            border: 1px solid #eee;
         }
 
-        /* Imágenes en Chat */
         .chat-img {
             max-width: 200px;
-            border-radius: 10px;
-            cursor: pointer;
-            transition: 0.2s;
-            display: block;
+            border-radius: 8px;
             margin-top: 5px;
+            cursor: pointer;
         }
 
-        .chat-img:hover {
-            opacity: 0.9;
-        }
-
-        /* Modo Oscuro Forzado */
+        /* DARK MODE OVERRIDES */
         [data-bs-theme="dark"] .bg-white,
         [data-bs-theme="dark"] .bg-light {
             background-color: #212529 !important;
             color: #fff !important;
         }
 
-        [data-bs-theme="dark"] .chat-messages {
-            background-color: #121212 !important;
+        [data-bs-theme="dark"] .chat-box {
+            background: #121212;
         }
 
-        [data-bs-theme="dark"] .message-wrapper.other .message-bubble {
-            background-color: #2b3035 !important;
-            color: #fff;
-        }
-
-        [data-bs-theme="dark"] .message-system {
-            background-color: rgba(255, 255, 255, 0.1);
-            color: #aaa;
+        [data-bs-theme="dark"] .msg.other {
+            background: #2c2c2c;
+            color: white;
             border-color: #444;
         }
 
         [data-bs-theme="dark"] input,
         [data-bs-theme="dark"] select,
         [data-bs-theme="dark"] textarea {
-            background-color: #2b3035 !important;
+            background: #2c2c2c !important;
             color: white !important;
             border-color: #444 !important;
         }
@@ -152,120 +128,139 @@
 </head>
 
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark navbar-custom py-3">
-        <div class="container">
-            <a class="navbar-brand fw-bold" href="#"><i class="fas fa-layer-group me-2"></i>Northgate<span
-                    class="opacity-75 fw-light">Desk</span></a>
+    <nav class="navbar navbar-expand-lg navbar-dark navbar-custom py-2">
+        <div class="container-fluid px-4">
+            <a class="navbar-brand fw-bold" href="#"><i class="fas fa-layer-group me-2"></i>Northgate <span
+                    class="badge bg-white text-primary ms-2 rounded-pill small" id="userRoleBadge">Rol</span></a>
             <div class="d-flex align-items-center gap-3">
-                <button class="btn btn-outline-light rounded-circle" onclick="toggleTheme()"><i
-                        class="fas fa-moon"></i></button>
-                <div class="d-flex align-items-center text-white gap-2">
-                    <div class="avatar-circle bg-white text-primary">AD</div>
-                    <span class="d-none d-md-block small">Admin</span>
+                <button class="btn btn-link text-white p-0" onclick="toggleTheme()"><i class="fas fa-moon"></i></button>
+                <div class="d-flex align-items-center text-white gap-2 border-start ps-3 border-white-50">
+                    <div class="avatar bg-white text-dark" id="userInitials">U</div>
+                    <span class="d-none d-md-block small fw-bold" id="userName">Usuario</span>
                 </div>
-                <a href="/" class="btn btn-sm btn-danger ms-2 rounded-pill"><i class="fas fa-sign-out-alt"></i></a>
+                <button onclick="logout()" class="btn btn-sm btn-danger rounded-circle"><i
+                        class="fas fa-power-off"></i></button>
             </div>
         </div>
     </nav>
 
-    <div class="container mt-5 mb-5">
-        <div class="row g-4 mb-5">
-            <div class="col-md-3">
-                <div class="stat-card p-4 h-100 bg-primary text-white position-relative">
-                    <h3 class="fw-bold" id="k-total">0</h3>
-                    <p class="mb-0 opacity-75">Tickets</p><i class="fas fa-ticket-alt stat-icon"></i>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="stat-card p-4 h-100 bg-warning text-dark position-relative">
-                    <h3 class="fw-bold" id="k-open">0</h3>
-                    <p class="mb-0 opacity-75">Abiertos</p><i class="fas fa-clock stat-icon"></i>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="stat-card p-4 h-100 bg-success text-white position-relative">
-                    <h3 class="fw-bold" id="k-assets">0</h3>
-                    <p class="mb-0 opacity-75">Activos</p><i class="fas fa-server stat-icon"></i>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="card stat-card h-100 border-0 shadow-sm">
-                    <div class="card-body p-2 d-flex justify-content-center">
-                        <div style="height:100px;width:100%;"><canvas id="statusChart"></canvas></div>
-                    </div>
-                </div>
+    <div class="container-fluid px-4 mt-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h4 class="mb-0 fw-bold text-muted">Dashboard</h4>
+            <div class="d-flex gap-2">
+                <a href="/api/export" class="btn btn-success rounded-pill px-3 shadow-sm role-admin-only"><i
+                        class="fas fa-file-excel me-2"></i>Excel</a>
+                <button class="btn btn-primary rounded-pill px-4 shadow-sm" onclick="modalNew()"><i
+                        class="fas fa-plus me-2"></i>Crear Ticket</button>
             </div>
         </div>
 
-        <div class="d-flex justify-content-between align-items-center mb-3">
-            <ul class="nav nav-pills" role="tablist">
-                <li class="nav-item"><button class="nav-link active rounded-pill px-4" data-bs-toggle="pill"
-                        data-bs-target="#tab-tickets">Tickets</button></li>
-                <li class="nav-item ms-2"><button class="nav-link rounded-pill px-4" data-bs-toggle="pill"
-                        data-bs-target="#tab-activos">Activos</button></li>
-            </ul>
-            <div class="d-flex gap-2">
-                <a href="/api/export" class="btn btn-success rounded-pill px-3 shadow-sm"><i
-                        class="fas fa-file-excel me-2"></i>Excel</a>
-                <button class="btn btn-primary rounded-pill px-4 shadow-sm" onclick="modalNew()"><i
-                        class="fas fa-plus me-2"></i>Nuevo</button>
+        <div class="row g-3 mb-4 role-staff-only">
+            <div class="col-md-3">
+                <div class="stat-card p-3 h-100 bg-primary text-white">
+                    <h3 id="k-total">0</h3><small>Total Tickets</small>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card p-3 h-100 bg-warning text-dark">
+                    <h3 id="k-open">0</h3><small>Abiertos</small>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card p-3 h-100 bg-success text-white">
+                    <h3 id="k-assets">0</h3><small>Activos</small>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card h-100 border-0 shadow-sm p-2"><canvas id="statusChart"></canvas></div>
             </div>
         </div>
+
+        <ul class="nav nav-tabs border-0 mb-3" role="tablist">
+            <li class="nav-item"><button
+                    class="nav-link active border-0 bg-transparent fw-bold border-bottom border-primary border-3"
+                    data-bs-toggle="tab" data-bs-target="#tab-tickets">Mis Tickets</button></li>
+            <li class="nav-item role-staff-only"><button class="nav-link border-0 bg-transparent fw-bold text-muted"
+                    data-bs-toggle="tab" data-bs-target="#tab-activos">Inventario Activos</button></li>
+        </ul>
 
         <div class="tab-content">
             <div class="tab-pane fade show active" id="tab-tickets">
-                <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
-                    <div class="card-body p-0">
-                        <table class="table table-hover align-middle mb-0">
-                            <thead class="bg-light">
-                                <tr>
-                                    <th class="ps-4">ID</th>
-                                    <th>Asunto</th>
-                                    <th>Prioridad</th>
-                                    <th>Activo</th>
-                                    <th>Estado</th>
-                                    <th class="text-end pe-4">Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody id="ticketTable"></tbody>
-                        </table>
-                    </div>
+                <div class="card border-0 shadow-sm rounded-3 overflow-hidden">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="bg-light">
+                            <tr>
+                                <th class="ps-4">Asunto</th>
+                                <th>Creado por</th>
+                                <th>Prioridad</th>
+                                <th>Estado</th>
+                                <th class="text-end pe-4">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="ticketTable"></tbody>
+                    </table>
                 </div>
             </div>
+
             <div class="tab-pane fade" id="tab-activos">
                 <div class="row">
                     <div class="col-md-4">
-                        <div class="card border-0 shadow-sm rounded-4 p-4">
-                            <h5 class="fw-bold mb-3">Registrar Activo</h5>
+                        <div class="card border-0 shadow-sm p-3">
+                            <h6>Nuevo Activo</h6>
                             <form id="activoForm">
-                                <input type="text" id="aname" class="form-control mb-2 bg-light border-0"
-                                    placeholder="Nombre" required>
-                                <select id="atype" class="form-select mb-2 bg-light border-0">
+                                <input type="text" id="aname" class="form-control mb-2" placeholder="Nombre" required>
+                                <select id="atype" class="form-select mb-2">
                                     <option>Laptop</option>
                                     <option>Monitor</option>
                                     <option>Móvil</option>
                                 </select>
-                                <input type="text" id="aserial" class="form-control mb-3 bg-light border-0"
-                                    placeholder="Serial" required>
-                                <button type="submit" class="btn btn-success w-100 rounded-pill">Guardar</button>
+                                <input type="text" id="aserial" class="form-control mb-2" placeholder="Serial" required>
+                                <button type="submit" class="btn btn-sm btn-success w-100">Guardar</button>
                             </form>
                         </div>
                     </div>
                     <div class="col-md-8">
-                        <div class="card border-0 shadow-sm rounded-4">
-                            <div class="card-body p-0">
-                                <table class="table table-hover align-middle mb-0">
-                                    <thead class="bg-light">
-                                        <tr>
-                                            <th class="ps-4">Equipo</th>
-                                            <th>Serial</th>
-                                            <th class="text-end pe-4"></th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="activosTable"></tbody>
-                                </table>
-                            </div>
+                        <div class="card border-0 shadow-sm">
+                            <table class="table table-hover mb-0">
+                                <thead class="bg-light">
+                                    <tr>
+                                        <th class="ps-3">Equipo</th>
+                                        <th>Serial</th>
+                                        <th class="text-end pe-3"></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="activosTable"></tbody>
+                            </table>
                         </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="chatModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content border-0 shadow-lg" style="height: 600px;">
+                <div class="modal-header bg-light border-0">
+                    <div>
+                        <h6 class="mb-0 fw-bold" id="cTitle">Chat</h6><small class="text-muted">Ticket #<span
+                                id="cId"></span></small>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-0 d-flex flex-column">
+                    <div id="chatBox" class="chat-box"></div>
+                    <div class="p-3 bg-white border-top">
+                        <form id="chatForm" class="d-flex gap-2">
+                            <input type="file" id="fInput" hidden accept="image/*" onchange="uploadImg(this)">
+                            <button type="button" class="btn btn-light border rounded-circle"
+                                onclick="document.getElementById('fInput').click()"><i
+                                    class="fas fa-paperclip"></i></button>
+                            <input type="text" id="cInput" class="form-control border-0 bg-light"
+                                placeholder="Escribe un mensaje..." autocomplete="off">
+                            <button type="submit" class="btn btn-primary rounded-circle"><i
+                                    class="fas fa-paper-plane"></i></button>
+                        </form>
                     </div>
                 </div>
             </div>
@@ -273,64 +268,25 @@
     </div>
 
     <div class="modal fade" id="newTicketModal" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content border-0 shadow-lg rounded-4">
-                <div class="modal-header border-0 pb-0">
-                    <h5 class="modal-title fw-bold">Nuevo Ticket</h5><button type="button" class="btn-close"
-                        data-bs-dismiss="modal"></button>
+        <div class="modal-dialog">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header border-0">
+                    <h5 class="modal-title">Nuevo Ticket</h5>
                 </div>
                 <div class="modal-body">
-                    <form id="ticketForm"><input type="text" id="ttit"
-                            class="form-control bg-light border-0 mb-3 fw-bold" placeholder="Asunto" required><textarea
-                            id="tdesc" class="form-control bg-light border-0 mb-3" rows="3" placeholder="Descripción"
-                            required></textarea>
+                    <form id="ticketForm"><input type="text" id="ttit" class="form-control mb-3" placeholder="Asunto"
+                            required><textarea id="tdesc" class="form-control mb-3" rows="3"
+                            placeholder="Detalle el problema" required></textarea>
                         <div class="row mb-3">
-                            <div class="col-6"><select id="tprio" class="form-select bg-light border-0">
-                                    <option value="media">Media</option>
-                                    <option value="alta">Alta</option>
-                                    <option value="baja">Baja</option>
+                            <div class="col"><select id="tprio" class="form-select">
+                                    <option value="media">Prioridad Media</option>
+                                    <option value="alta">Prioridad Alta</option>
                                 </select></div>
-                            <div class="col-6"><select id="tact" class="form-select bg-light border-0">
+                            <div class="col"><select id="tact" class="form-select">
                                     <option value="">Sin Activo</option>
                                 </select></div>
-                        </div><button type="submit" class="btn btn-primary w-100 rounded-pill">Crear</button>
+                        </div><button class="btn btn-primary w-100">Crear Solicitud</button>
                     </form>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="modal fade" id="chatModal" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered modal-lg">
-            <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden" style="height: 600px;">
-                <div class="modal-header bg-light border-0 py-3 d-flex align-items-center">
-                    <div class="avatar-circle bg-primary text-white me-2">TK</div>
-                    <div>
-                        <h6 class="mb-0 fw-bold">Ticket #<span id="cId"></span></h6><small class="text-muted"
-                            id="cTitle">Cargando...</small>
-                    </div>
-                    <button type="button" class="btn-close ms-auto" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body p-0 d-flex flex-column bg-light">
-                    <div id="chatBox" class="chat-messages"></div>
-                    <div class="p-3 bg-white border-top">
-                        <form id="chatForm" class="d-flex gap-2 align-items-center">
-                            <input type="file" id="fileInput" accept="image/*" style="display: none;"
-                                onchange="handleFileSelect(this)">
-
-                            <button type="button" class="btn btn-light rounded-circle border"
-                                onclick="document.getElementById('fileInput').click()" title="Adjuntar imagen"><i
-                                    class="fas fa-paperclip text-muted"></i></button>
-                            <select id="cUser" class="form-select border-0 bg-light" style="width: 110px;">
-                                <option value="Soporte">Soporte</option>
-                                <option value="Cliente">Cliente</option>
-                            </select>
-                            <input type="text" id="cInput" class="form-control border-0 bg-light"
-                                placeholder="Escribe..." autocomplete="off">
-                            <button type="submit" class="btn btn-primary rounded-circle shadow-sm"
-                                style="width: 40px; height: 40px;"><i class="fas fa-paper-plane"></i></button>
-                        </form>
-                    </div>
                 </div>
             </div>
         </div>
@@ -339,158 +295,167 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         const API = window.location.origin + "/api";
-        let curId = null, chart = null;
+        let USER = JSON.parse(localStorage.getItem('ng_user'));
+        let CUR_ID = null, CHART = null;
 
-        document.addEventListener('DOMContentLoaded', () => { loadAll(); initChart(); });
+        if (!USER) window.location.href = '/'; // Seguridad básica
+
+        document.addEventListener('DOMContentLoaded', () => {
+            setupUI();
+            loadAll();
+        });
+
+        function setupUI() {
+            // Mostrar datos usuario
+            document.getElementById('userName').innerText = USER.nombre;
+            document.getElementById('userInitials').innerText = USER.nombre.substring(0, 1);
+            document.getElementById('userRoleBadge').innerText = USER.rol.toUpperCase();
+
+            // Ocultar elementos según rol (RBAC Frontend)
+            if (USER.rol === 'usuario') {
+                document.querySelectorAll('.role-staff-only').forEach(el => el.style.display = 'none');
+                document.querySelectorAll('.role-admin-only').forEach(el => el.style.display = 'none');
+            }
+            if (USER.rol === 'tecnico') {
+                document.querySelectorAll('.role-admin-only').forEach(el => el.style.display = 'none');
+            }
+
+            initChart();
+        }
 
         async function loadAll() {
-            const [acts, ticks] = await Promise.all([fetch(API + '/activos').then(r => r.json()), fetch(API + '/tickets').then(r => r.json())]);
+            // Cargar datos con filtro de usuario/rol
+            const [acts, ticks] = await Promise.all([
+                fetch(API + '/activos').then(r => r.json()),
+                fetch(`${API}/tickets?user_id=${USER.id}&rol=${USER.rol}`).then(r => r.json())
+            ]);
 
-            // Activos
-            document.getElementById('k-assets').innerText = acts.length;
+            // Tabla Activos (Admin/Tec)
             const tbA = document.getElementById('activosTable'), sel = document.getElementById('tact');
             tbA.innerHTML = ''; sel.innerHTML = '<option value="">Sin Activo</option>';
             acts.forEach(a => {
                 sel.innerHTML += `<option value="${a.id}">${a.nombre}</option>`;
-                tbA.innerHTML += `<tr><td class="ps-4 fw-bold">${a.nombre}<br><small class="text-muted">${a.tipo}</small></td><td><code>${a.serial}</code></td><td class="text-end pe-4"><button class="btn btn-link text-danger" onclick="delAct(${a.id})"><i class="fas fa-trash"></i></button></td></tr>`;
+                const btnDel = USER.rol === 'admin' ? `<button class="btn btn-link text-danger" onclick="delAct(${a.id})"><i class="fas fa-trash"></i></button>` : '';
+                tbA.innerHTML += `<tr><td class="ps-3 fw-bold">${a.nombre}<br><small class="text-muted">${a.serial}</small></td><td>${a.tipo}</td><td class="text-end pe-3">${btnDel}</td></tr>`;
             });
+            document.getElementById('k-assets').innerText = acts.length;
 
-            // Tickets
+            // Tabla Tickets
             const tbT = document.getElementById('ticketTable'); tbT.innerHTML = '';
             let open = 0, closed = 0;
             ticks.forEach(t => {
                 if (t.estado === 'abierto') open++; else closed++;
-                const op = t.estado === 'cerrado' ? 0.5 : 1;
+                const isMyTicket = t.creador_id === USER.id;
+                const canManage = USER.rol === 'admin' || USER.rol === 'tecnico';
+
+                // Botones acciones
+                let actions = `<button class="btn btn-sm btn-primary me-1" onclick="openChat(${t.id}, '${t.titulo}')"><i class="fas fa-comments"></i></button>`;
+                if (canManage) {
+                    actions += t.estado === 'abierto'
+                        ? `<button class="btn btn-sm btn-outline-success me-1" onclick="updSt(${t.id},'cerrado')"><i class="fas fa-check"></i></button>`
+                        : `<button class="btn btn-sm btn-outline-secondary me-1" onclick="updSt(${t.id},'abierto')"><i class="fas fa-undo"></i></button>`;
+                }
+                if (USER.rol === 'admin') actions += `<button class="btn btn-sm btn-outline-danger" onclick="delTick(${t.id})"><i class="fas fa-trash"></i></button>`;
+
                 tbT.innerHTML += `
-                    <tr style="opacity:${op}" onclick="openChat(${t.id}, '${t.titulo}')">
-                        <td class="ps-4 fw-bold text-muted">#${t.id}</td>
-                        <td><div class="fw-bold">${t.titulo}</div></td>
-                        <td><span class="badge bg-${t.prioridad === 'alta' ? 'danger' : (t.prioridad === 'media' ? 'warning' : 'success')}-subtle text-dark border">${t.prioridad}</span></td>
-                        <td>${t.activo_nombre || '-'}</td>
-                        <td><span class="badge bg-${t.estado === 'abierto' ? 'warning' : 'secondary'}">${t.estado}</span></td>
-                        <td class="text-end pe-4" onclick="event.stopPropagation()">
-                            ${t.estado === 'abierto' ? `<button class="btn btn-sm btn-outline-success rounded-circle" onclick="updSt(${t.id},'cerrado')"><i class="fas fa-check"></i></button>` : `<button class="btn btn-sm btn-outline-secondary rounded-circle" onclick="updSt(${t.id},'abierto')"><i class="fas fa-undo"></i></button>`}
-                            <button class="btn btn-sm btn-outline-danger rounded-circle ms-1" onclick="delTick(${t.id})"><i class="fas fa-trash"></i></button>
-                        </td>
-                    </tr>
-                `;
+                    <tr>
+                        <td class="ps-4"><div class="fw-bold">${t.titulo}</div><small class="text-muted">${t.activo_nombre || '-'}</small></td>
+                        <td><small>${t.creador_nombre}</small></td>
+                        <td><span class="badge bg-${t.prioridad === 'alta' ? 'danger' : 'warning'}-subtle text-dark">${t.prioridad}</span></td>
+                        <td><span class="badge bg-${t.estado === 'abierto' ? 'success' : 'secondary'}">${t.estado}</span></td>
+                        <td class="text-end pe-4">${actions}</td>
+                    </tr>`;
             });
             document.getElementById('k-total').innerText = ticks.length;
             document.getElementById('k-open').innerText = open;
             updateChart(open, closed);
         }
 
-        // --- CHAT MULTIMEDIA ---
+        // CHAT
         async function openChat(id, title) {
-            curId = id; document.getElementById('cId').innerText = id; document.getElementById('cTitle').innerText = title;
+            CUR_ID = id;
+            document.getElementById('cTitle').innerText = title;
+            document.getElementById('cId').innerText = id;
             new bootstrap.Modal(document.getElementById('chatModal')).show();
             loadMsgs();
         }
 
         async function loadMsgs() {
-            const msgs = await fetch(`${API}/tickets/${curId}/mensajes`).then(r => r.json());
+            if (!CUR_ID) return;
+            const msgs = await fetch(`${API}/tickets/${CUR_ID}/mensajes`).then(r => r.json());
             const box = document.getElementById('chatBox'); box.innerHTML = '';
-            if (!msgs.length) box.innerHTML = '<div class="text-center mt-5 text-muted opacity-50"><i class="far fa-comments fa-2x"></i><br>Sin mensajes</div>';
-
             msgs.forEach(m => {
                 if (m.tipo === 'evento') {
-                    box.innerHTML += `<div class="message-system"><i class="fas fa-info-circle me-1"></i>${m.contenido}</div>`;
+                    box.innerHTML += `<div class="msg system">${m.contenido}</div>`;
                 } else {
-                    const isMe = m.autor === 'Soporte';
+                    const isMe = m.autor_id === USER.id;
                     const content = m.tipo === 'imagen' ? `<img src="${m.contenido}" class="chat-img" onclick="window.open(this.src)">` : m.contenido;
-                    box.innerHTML += `
-                        <div class="message-wrapper ${isMe ? 'me' : 'other'}">
-                            <div class="avatar-circle ${isMe ? 'bg-primary text-white' : 'bg-white border'}">${m.autor.substring(0, 2)}</div>
-                            <div class="message-bubble">${content}<div class="msg-time">${new Date(m.fecha).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div></div>
-                        </div>`;
+                    box.innerHTML += `<div class="msg ${isMe ? 'me' : 'other'}"><strong>${m.autor_nombre}</strong><br>${content}</div>`;
                 }
             });
             box.scrollTop = box.scrollHeight;
         }
 
-        // SUBIR IMAGEN (COMPRESIÓN)
-        function handleFileSelect(input) {
-            if (input.files && input.files[0]) {
-                const file = input.files[0];
-                const reader = new FileReader();
-                reader.onload = function (e) {
-                    // Crear imagen para reducir tamaño
-                    const img = new Image();
-                    img.src = e.target.result;
-                    img.onload = function () {
-                        const canvas = document.createElement('canvas');
-                        const ctx = canvas.getContext('2d');
-                        const maxWidth = 800; // Reducir a 800px ancho
-                        const scale = maxWidth / img.width;
-                        canvas.width = maxWidth;
-                        canvas.height = img.height * scale;
-                        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                        const base64 = canvas.toDataURL('image/jpeg', 0.7); // Calidad 70%
-                        enviarMensaje(base64, 'imagen');
-                    }
-                }
-                reader.readAsDataURL(file);
-            }
-            input.value = ''; // Limpiar
-        }
-
-        document.getElementById('chatForm').addEventListener('submit', (e) => {
+        document.getElementById('chatForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const txt = document.getElementById('cInput').value;
-            if (txt.trim()) enviarMensaje(txt, 'texto');
+            if (txt) sendMsg(txt, 'texto');
         });
 
-        async function enviarMensaje(contenido, tipo) {
-            const autor = document.getElementById('cUser').value;
-            await fetch(`${API}/tickets/${curId}/mensajes`, {
+        async function sendMsg(content, type) {
+            await fetch(`${API}/tickets/${CUR_ID}/mensajes`, {
                 method: 'POST', headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ autor, contenido, tipo })
+                body: JSON.stringify({ usuario_id: USER.id, contenido: content, tipo: type })
             });
-            document.getElementById('cInput').value = '';
-            loadMsgs();
+            document.getElementById('cInput').value = ''; loadMsgs();
         }
 
-        // --- UTILIDADES ---
-        async function updSt(id, st) { await fetch(`${API}/tickets/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ estado: st, autor_cambio: 'Soporte' }) }); loadAll(); }
+        // ACCIONES
+        async function updSt(id, st) { await fetch(`${API}/tickets/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ estado: st, usuario_id: USER.id }) }); loadAll(); }
         async function delTick(id) { if (confirm('¿Borrar?')) { await fetch(`${API}/tickets/${id}`, { method: 'DELETE' }); loadAll(); } }
-        async function delAct(id) { const r = await fetch(`${API}/activos/${id}`, { method: 'DELETE' }); if (r.ok) loadAll(); else Swal.fire('Error', 'Tiene tickets asociados', 'error'); }
-        function modalNew() { new bootstrap.Modal(document.getElementById('newTicketModal')).show(); }
-        function toggleTheme() {
-            const html = document.documentElement; html.setAttribute('data-bs-theme', html.getAttribute('data-bs-theme') === 'dark' ? 'light' : 'dark');
-        }
+        async function delAct(id) { const r = await fetch(`${API}/activos/${id}`, { method: 'DELETE' }); if (r.ok) loadAll(); else Swal.fire('Error', 'En uso', 'error'); }
 
-        // CREAR TICKET
+        // FORMULARIOS
         document.getElementById('ticketForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             await fetch(API + '/tickets', {
                 method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({
-                    titulo: document.getElementById('ttit').value,
-                    descripcion: document.getElementById('tdesc').value,
-                    prioridad: document.getElementById('tprio').value,
-                    activo_id: document.getElementById('tact').value || null
+                    titulo: document.getElementById('ttit').value, descripcion: document.getElementById('tdesc').value,
+                    prioridad: document.getElementById('tprio').value, activo_id: document.getElementById('tact').value || null,
+                    usuario_id: USER.id
                 })
             });
             bootstrap.Modal.getInstance(document.getElementById('newTicketModal')).hide(); e.target.reset(); loadAll();
         });
 
-        // CREAR ACTIVO
         document.getElementById('activoForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             await fetch(API + '/activos', {
                 method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({
-                    nombre: document.getElementById('aname').value,
-                    tipo: document.getElementById('atype').value,
-                    serial: document.getElementById('aserial').value
+                    nombre: document.getElementById('aname').value, tipo: document.getElementById('atype').value, serial: document.getElementById('aserial').value
                 })
             });
             e.target.reset(); loadAll();
         });
 
-        function initChart() {
-            const ctx = document.getElementById('statusChart').getContext('2d');
-            chart = new Chart(ctx, { type: 'doughnut', data: { labels: ['Abiertos', 'Cerrados'], datasets: [{ data: [0, 0], backgroundColor: ['#ffc107', '#198754'], borderWidth: 0 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, cutout: '75%' } });
+        // HELPERS
+        function logout() { localStorage.removeItem('ng_user'); window.location.href = '/'; }
+        function modalNew() { new bootstrap.Modal(document.getElementById('newTicketModal')).show(); }
+        function toggleTheme() { const h = document.documentElement; h.setAttribute('data-bs-theme', h.getAttribute('data-bs-theme') === 'dark' ? 'light' : 'dark'); }
+        function uploadImg(inp) {
+            const f = inp.files[0]; if (!f) return;
+            const r = new FileReader(); r.onload = e => {
+                const i = new Image(); i.src = e.target.result;
+                i.onload = () => {
+                    const c = document.createElement('canvas'), ctx = c.getContext('2d');
+                    const sc = 800 / i.width; c.width = 800; c.height = i.height * sc;
+                    ctx.drawImage(i, 0, 0, c.width, c.height);
+                    sendMsg(c.toDataURL('image/jpeg', 0.7), 'imagen');
+                }
+            }; r.readAsDataURL(f); inp.value = '';
         }
-        function updateChart(o, c) { if (chart) { chart.data.datasets[0].data = [o, c]; chart.update(); } }
+        function initChart() { const ctx = document.getElementById('statusChart').getContext('2d'); CHART = new Chart(ctx, { type: 'doughnut', data: { labels: ['Abierto', 'Cerrado'], datasets: [{ data: [0, 0], backgroundColor: ['#ffc107', '#198754'], borderWidth: 0 }] }, options: { plugins: { legend: { display: false } }, cutout: '70%' } }); }
+        function updateChart(o, c) { if (CHART) { CHART.data.datasets[0].data = [o, c]; CHART.update(); } }
     </script>
 </body>
 

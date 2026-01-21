@@ -4,138 +4,108 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Northgate Login</title>
+    <title>Acceso Northgate</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <style>
         body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
             height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-family: 'Inter', sans-serif;
+            font-family: 'Segoe UI', sans-serif;
         }
 
         .login-card {
-            background: rgba(255, 255, 255, 0.95);
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
             border-radius: 20px;
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
-            overflow: hidden;
-            width: 400px;
+            width: 380px;
             padding: 40px;
             text-align: center;
-        }
-
-        .brand-logo {
-            font-size: 2rem;
-            font-weight: 800;
-            background: -webkit-linear-gradient(#667eea, #764ba2);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin-bottom: 10px;
-        }
-
-        .btn-microsoft {
-            background-color: #2F2F2F;
             color: white;
-            border: 1px solid #2F2F2F;
-            font-weight: 500;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+        }
+
+        .form-control {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
             padding: 12px;
-            transition: all 0.3s;
         }
 
-        .btn-microsoft:hover {
-            background-color: #000;
-            transform: translateY(-2px);
+        .form-control::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .form-control:focus {
+            background: rgba(255, 255, 255, 0.3);
             color: white;
+            box-shadow: none;
         }
 
-        .divider {
-            display: flex;
-            align-items: center;
-            text-align: center;
-            margin: 20px 0;
-            color: #aaa;
-            font-size: 0.8rem;
+        .btn-login {
+            background: #00d2ff;
+            background: linear-gradient(to right, #00d2ff, #3a7bd5);
+            border: none;
+            padding: 12px;
+            font-weight: bold;
+            margin-top: 20px;
+            width: 100%;
+            border-radius: 30px;
+            transition: 0.3s;
         }
 
-        .divider::before,
-        .divider::after {
-            content: '';
-            flex: 1;
-            border-bottom: 1px solid #ddd;
-        }
-
-        .divider:not(:empty)::before {
-            margin-right: .5em;
-        }
-
-        .divider:not(:empty)::after {
-            margin-left: .5em;
+        .btn-login:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 15px #00d2ff;
+            color: white;
         }
     </style>
 </head>
 
 <body>
-
     <div class="login-card">
-        <div class="mb-4">
-            <i class="fas fa-layer-group fa-3x text-primary mb-3"
-                style="background: -webkit-linear-gradient(#667eea, #764ba2); -webkit-background-clip: text; -webkit-text-fill-color: transparent;"></i>
-            <h1 class="brand-logo">Northgate</h1>
-            <p class="text-muted small">Portal de Gestión de Servicios TI</p>
-        </div>
-
-        <button class="btn btn-microsoft w-100 mb-3 rounded-pill" onclick="loginMicrosoft()">
-            <i class="fab fa-microsoft me-2"></i> Iniciar con Microsoft
-        </button>
-
-        <div class="divider">O ACCESO LOCAL</div>
-
-        <form onsubmit="loginLocal(event)">
-            <div class="mb-3 text-start">
-                <input type="email" class="form-control bg-light border-0 py-2" placeholder="usuario@northgate.com"
-                    required>
-            </div>
-            <div class="mb-4 text-start">
-                <input type="password" class="form-control bg-light border-0 py-2" placeholder="••••••••" required>
-            </div>
-            <button type="submit" class="btn btn-primary w-100 rounded-pill py-2 shadow-sm"
-                style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border:none;">
-                Entrar
-            </button>
+        <i class="fas fa-shield-alt fa-4x mb-3 text-info"></i>
+        <h2 class="fw-bold mb-4">Northgate Access</h2>
+        <form onsubmit="doLogin(event)">
+            <input type="email" id="email" class="form-control mb-3" placeholder="Correo corporativo" required>
+            <input type="password" id="pass" class="form-control mb-3" placeholder="Contraseña" required>
+            <button type="submit" class="btn btn-login">INICIAR SESIÓN</button>
         </form>
-
-        <p class="mt-4 mb-0 text-muted" style="font-size: 0.7rem;">&copy; 2024 Northgate Enterprise Systems</p>
+        <div class="mt-4 text-white-50 small">
+            <p class="mb-1">Credenciales Demo:</p>
+            <div>Admin: admin@ng.com | 1234</div>
+            <div>Téc: tecnico@ng.com | 1234</div>
+            <div>User: usuario@ng.com | 1234</div>
+        </div>
     </div>
-
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
-        function loginMicrosoft() {
-            // Aquí en el futuro conectaremos con Azure AD
-            Swal.fire({
-                icon: 'info',
-                title: 'Integración Microsoft',
-                text: 'En el futuro, esto redirigirá a login.microsoftonline.com',
-                confirmButtonColor: '#2F2F2F'
-            });
-        }
-
-        function loginLocal(e) {
+        async function doLogin(e) {
             e.preventDefault();
-            let timerInterval;
-            Swal.fire({
-                title: 'Autenticando...',
-                html: 'Validando credenciales...',
-                timer: 1500,
-                timerProgressBar: true,
-                didOpen: () => { Swal.showLoading(); },
-                willClose: () => { clearInterval(timerInterval); }
-            }).then((result) => {
-                // CAMBIO AQUÍ: Redirigir a la ruta '/app' en lugar de 'index.html'
-                window.location.href = '/app';
-            });
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('pass').value;
+
+            try {
+                const res = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+
+                if (res.ok) {
+                    const user = await res.json();
+                    localStorage.setItem('ng_user', JSON.stringify(user)); // Guardamos sesión
+                    window.location.href = '/app';
+                } else {
+                    Swal.fire('Error', 'Credenciales inválidas', 'error');
+                }
+            } catch (err) {
+                Swal.fire('Error', 'Fallo de conexión', 'error');
+            }
         }
     </script>
 </body>
