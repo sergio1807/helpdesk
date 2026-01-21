@@ -5,59 +5,36 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Northgate Enterprise Helpdesk</title>
-
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
     <style>
         :root {
             --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         }
 
         body {
-            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            font-family: 'Inter', sans-serif;
             background-color: var(--bs-body-bg);
             transition: 0.3s;
         }
 
-        /* Navbar */
         .navbar-custom {
             background: var(--primary-gradient);
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
         }
 
-        .brand-logo {
-            font-weight: 800;
-            letter-spacing: -0.5px;
-            font-size: 1.5rem;
-        }
-
-        /* Tarjetas y Tablas */
         .stat-card {
             border: none;
             border-radius: 15px;
             transition: transform 0.2s;
-            overflow: hidden;
         }
 
         .stat-card:hover {
             transform: translateY(-5px);
             box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
-        }
-
-        .stat-icon {
-            position: absolute;
-            right: 10px;
-            bottom: -10px;
-            font-size: 5rem;
-            opacity: 0.1;
-            transform: rotate(-15deg);
-        }
-
-        .table-hover tbody tr:hover {
-            background-color: rgba(102, 126, 234, 0.05);
-            cursor: pointer;
         }
 
         .avatar-circle {
@@ -69,19 +46,10 @@
             align-items: center;
             justify-content: center;
             font-weight: bold;
-            font-size: 0.8rem;
             color: #555;
         }
 
-        /* CHAT */
-        .chat-container {
-            height: 450px;
-            display: flex;
-            flex-direction: column;
-            border-radius: 10px;
-            overflow: hidden;
-        }
-
+        /* CHAT MEJORADO */
         .chat-messages {
             flex: 1;
             overflow-y: auto;
@@ -89,6 +57,7 @@
             display: flex;
             flex-direction: column;
             gap: 15px;
+            background-color: #f0f2f5;
         }
 
         .message-wrapper {
@@ -108,7 +77,6 @@
             border-radius: 18px;
             position: relative;
             font-size: 0.95rem;
-            line-height: 1.4;
             box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
         }
 
@@ -118,195 +86,168 @@
             border-bottom-right-radius: 4px;
         }
 
-        /* ESTILOS POR DEFECTO (MODO CLARO) */
         .message-wrapper.other .message-bubble {
-            background-color: #f8f9fa;
-            border: 1px solid #dee2e6;
+            background-color: #ffffff;
             color: #000;
+            border-bottom-left-radius: 4px;
         }
 
-        .msg-time {
-            font-size: 0.7rem;
-            margin-top: 4px;
-            opacity: 0.7;
+        /* Eventos de Sistema (Centrados) */
+        .message-system {
+            align-self: center;
+            background-color: rgba(0, 0, 0, 0.05);
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            color: #666;
+            font-weight: 500;
+            margin: 10px 0;
+            border: 1px solid rgba(0, 0, 0, 0.1);
         }
 
-        /* --- MODO OSCURO (REGLAS FORZADAS) --- */
-        [data-bs-theme="dark"] .stat-card {
-            background-color: #2b3035;
+        /* Imágenes en Chat */
+        .chat-img {
+            max-width: 200px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: 0.2s;
+            display: block;
+            margin-top: 5px;
         }
 
-        /* Forzamos el fondo oscuro en el modal y eliminamos los fondos blancos de Bootstrap */
-        [data-bs-theme="dark"] .modal-content,
-        [data-bs-theme="dark"] .modal-body,
-        [data-bs-theme="dark"] .modal-header,
-        [data-bs-theme="dark"] .modal-footer,
+        .chat-img:hover {
+            opacity: 0.9;
+        }
+
+        /* Modo Oscuro Forzado */
         [data-bs-theme="dark"] .bg-white,
-        /* Aplasta la clase bg-white */
-        [data-bs-theme="dark"] .bg-light
-
-        /* Aplasta la clase bg-light */
-            {
+        [data-bs-theme="dark"] .bg-light {
             background-color: #212529 !important;
-            color: #f8f9fa !important;
-            border-color: #373b3e !important;
-        }
-
-        /* Área de mensajes oscura */
-        [data-bs-theme="dark"] .chat-messages {
-            background-color: #1a1d20 !important;
-        }
-
-        /* Burbujas del cliente en oscuro */
-        [data-bs-theme="dark"] .message-wrapper.other .message-bubble {
-            background-color: #343a40 !important;
             color: #fff !important;
-            border: 1px solid #495057 !important;
         }
 
-        /* Inputs oscuros */
+        [data-bs-theme="dark"] .chat-messages {
+            background-color: #121212 !important;
+        }
+
+        [data-bs-theme="dark"] .message-wrapper.other .message-bubble {
+            background-color: #2b3035 !important;
+            color: #fff;
+        }
+
+        [data-bs-theme="dark"] .message-system {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: #aaa;
+            border-color: #444;
+        }
+
         [data-bs-theme="dark"] input,
         [data-bs-theme="dark"] select,
         [data-bs-theme="dark"] textarea {
             background-color: #2b3035 !important;
-            color: #fff !important;
-            border: 1px solid #495057 !important;
-        }
-
-        /* Botón de cerrar modal blanco */
-        [data-bs-theme="dark"] .btn-close {
-            filter: invert(1) grayscale(100%) brightness(200%);
+            color: white !important;
+            border-color: #444 !important;
         }
     </style>
 </head>
 
 <body>
-
     <nav class="navbar navbar-expand-lg navbar-dark navbar-custom py-3">
         <div class="container">
-            <a class="navbar-brand brand-logo" href="#"><i class="fas fa-layer-group me-2"></i>Northgate<span
-                    class="fw-light opacity-75">Desk</span></a>
-
+            <a class="navbar-brand fw-bold" href="#"><i class="fas fa-layer-group me-2"></i>Northgate<span
+                    class="opacity-75 fw-light">Desk</span></a>
             <div class="d-flex align-items-center gap-3">
-                <button class="btn btn-outline-light rounded-circle" id="themeToggle" onclick="toggleTheme()"
-                    title="Cambiar Tema"><i class="fas fa-moon"></i></button>
-
+                <button class="btn btn-outline-light rounded-circle" onclick="toggleTheme()"><i
+                        class="fas fa-moon"></i></button>
                 <div class="d-flex align-items-center text-white gap-2">
                     <div class="avatar-circle bg-white text-primary">AD</div>
                     <span class="d-none d-md-block small">Admin</span>
                 </div>
-
-                <a href="/" class="btn btn-sm btn-danger ms-2 rounded-pill">
-                    <i class="fas fa-sign-out-alt"></i> Salir
-                </a>
+                <a href="/" class="btn btn-sm btn-danger ms-2 rounded-pill"><i class="fas fa-sign-out-alt"></i></a>
             </div>
         </div>
     </nav>
 
     <div class="container mt-5 mb-5">
-
         <div class="row g-4 mb-5">
             <div class="col-md-3">
                 <div class="stat-card p-4 h-100 bg-primary text-white position-relative">
-                    <h3 class="fw-bold" id="kpi-tickets">0</h3>
-                    <p class="mb-0 opacity-75">Tickets Totales</p>
-                    <i class="fas fa-ticket-alt stat-icon text-white"></i>
+                    <h3 class="fw-bold" id="k-total">0</h3>
+                    <p class="mb-0 opacity-75">Tickets</p><i class="fas fa-ticket-alt stat-icon"></i>
                 </div>
             </div>
             <div class="col-md-3">
                 <div class="stat-card p-4 h-100 bg-warning text-dark position-relative">
-                    <h3 class="fw-bold" id="kpi-pendientes">0</h3>
-                    <p class="mb-0 opacity-75">Pendientes de Acción</p>
-                    <i class="fas fa-clock stat-icon text-dark"></i>
+                    <h3 class="fw-bold" id="k-open">0</h3>
+                    <p class="mb-0 opacity-75">Abiertos</p><i class="fas fa-clock stat-icon"></i>
                 </div>
             </div>
             <div class="col-md-3">
                 <div class="stat-card p-4 h-100 bg-success text-white position-relative">
-                    <h3 class="fw-bold" id="kpi-activos">0</h3>
-                    <p class="mb-0 opacity-75">Activos Inventariados</p>
-                    <i class="fas fa-server stat-icon text-white"></i>
+                    <h3 class="fw-bold" id="k-assets">0</h3>
+                    <p class="mb-0 opacity-75">Activos</p><i class="fas fa-server stat-icon"></i>
                 </div>
             </div>
             <div class="col-md-3">
                 <div class="card stat-card h-100 border-0 shadow-sm">
-                    <div class="card-body p-2 d-flex align-items-center justify-content-center">
-                        <div style="height: 100px; width: 100%;">
-                            <canvas id="statusChart"></canvas>
-                        </div>
+                    <div class="card-body p-2 d-flex justify-content-center">
+                        <div style="height:100px;width:100%;"><canvas id="statusChart"></canvas></div>
                     </div>
                 </div>
             </div>
         </div>
 
         <div class="d-flex justify-content-between align-items-center mb-3">
-            <ul class="nav nav-pills" id="pills-tab" role="tablist">
+            <ul class="nav nav-pills" role="tablist">
                 <li class="nav-item"><button class="nav-link active rounded-pill px-4" data-bs-toggle="pill"
-                        data-bs-target="#tab-tickets"><i class="fas fa-list-ul me-2"></i>Gestión Tickets</button></li>
+                        data-bs-target="#tab-tickets">Tickets</button></li>
                 <li class="nav-item ms-2"><button class="nav-link rounded-pill px-4" data-bs-toggle="pill"
-                        data-bs-target="#tab-activos"><i class="fas fa-laptop me-2"></i>Inventario</button></li>
+                        data-bs-target="#tab-activos">Activos</button></li>
             </ul>
             <div class="d-flex gap-2">
-                <a href="/api/export" class="btn btn-success rounded-pill shadow-sm px-3" target="_blank">
-                    <i class="fas fa-file-excel me-2"></i>Excel
-                </a>
-
-                <button class="btn btn-primary rounded-pill shadow-sm px-4" onclick="mostrarModalTicket()">
-                    <i class="fas fa-plus me-2"></i>Nuevo Ticket
-                </button>
+                <a href="/api/export" class="btn btn-success rounded-pill px-3 shadow-sm"><i
+                        class="fas fa-file-excel me-2"></i>Excel</a>
+                <button class="btn btn-primary rounded-pill px-4 shadow-sm" onclick="modalNew()"><i
+                        class="fas fa-plus me-2"></i>Nuevo</button>
             </div>
         </div>
 
         <div class="tab-content">
-
             <div class="tab-pane fade show active" id="tab-tickets">
                 <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
                     <div class="card-body p-0">
-                        <div class="table-responsive">
-                            <table class="table table-hover align-middle mb-0">
-                                <thead class="bg-light">
-                                    <tr class="text-uppercase small text-muted">
-                                        <th class="ps-4">ID</th>
-                                        <th>Asunto</th>
-                                        <th>Prioridad</th>
-                                        <th>Activo Asignado</th>
-                                        <th>Estado</th>
-                                        <th class="text-end pe-4">Acciones</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="ticketTable"></tbody>
-                            </table>
-                        </div>
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="bg-light">
+                                <tr>
+                                    <th class="ps-4">ID</th>
+                                    <th>Asunto</th>
+                                    <th>Prioridad</th>
+                                    <th>Activo</th>
+                                    <th>Estado</th>
+                                    <th class="text-end pe-4">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="ticketTable"></tbody>
+                        </table>
                     </div>
                 </div>
             </div>
-
             <div class="tab-pane fade" id="tab-activos">
                 <div class="row">
                     <div class="col-md-4">
                         <div class="card border-0 shadow-sm rounded-4 p-4">
                             <h5 class="fw-bold mb-3">Registrar Activo</h5>
                             <form id="activoForm">
-                                <div class="mb-3">
-                                    <label class="form-label small text-muted">Nombre del Equipo</label>
-                                    <input type="text" id="actNombre" class="form-control bg-light border-0" required>
-                                </div>
-                                <div class="row mb-3">
-                                    <div class="col">
-                                        <label class="form-label small text-muted">Tipo</label>
-                                        <select id="actTipo" class="form-select bg-light border-0">
-                                            <option>Laptop</option>
-                                            <option>Monitor</option>
-                                            <option>Servidor</option>
-                                            <option>Móvil</option>
-                                        </select>
-                                    </div>
-                                    <div class="col">
-                                        <label class="form-label small text-muted">Serial</label>
-                                        <input type="text" id="actSerial" class="form-control bg-light border-0"
-                                            required>
-                                    </div>
-                                </div>
-                                <button type="submit" class="btn btn-success w-100 rounded-pill">Guardar Activo</button>
+                                <input type="text" id="aname" class="form-control mb-2 bg-light border-0"
+                                    placeholder="Nombre" required>
+                                <select id="atype" class="form-select mb-2 bg-light border-0">
+                                    <option>Laptop</option>
+                                    <option>Monitor</option>
+                                    <option>Móvil</option>
+                                </select>
+                                <input type="text" id="aserial" class="form-control mb-3 bg-light border-0"
+                                    placeholder="Serial" required>
+                                <button type="submit" class="btn btn-success w-100 rounded-pill">Guardar</button>
                             </form>
                         </div>
                     </div>
@@ -317,7 +258,6 @@
                                     <thead class="bg-light">
                                         <tr>
                                             <th class="ps-4">Equipo</th>
-                                            <th>Tipo</th>
                                             <th>Serial</th>
                                             <th class="text-end pe-4"></th>
                                         </tr>
@@ -336,30 +276,24 @@
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content border-0 shadow-lg rounded-4">
                 <div class="modal-header border-0 pb-0">
-                    <h5 class="modal-title fw-bold">Crear Ticket</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    <h5 class="modal-title fw-bold">Nuevo Ticket</h5><button type="button" class="btn-close"
+                        data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <form id="ticketForm">
-                        <input type="text" id="tTitulo" class="form-control bg-light border-0 mb-3 p-3 fw-bold"
-                            placeholder="¿Qué está pasando?" required>
-                        <textarea id="tDesc" class="form-control bg-light border-0 mb-3" rows="3"
-                            placeholder="Describe el problema en detalle..." required></textarea>
+                    <form id="ticketForm"><input type="text" id="ttit"
+                            class="form-control bg-light border-0 mb-3 fw-bold" placeholder="Asunto" required><textarea
+                            id="tdesc" class="form-control bg-light border-0 mb-3" rows="3" placeholder="Descripción"
+                            required></textarea>
                         <div class="row mb-3">
-                            <div class="col-6">
-                                <select id="tPrio" class="form-select bg-light border-0">
-                                    <option value="media">Prioridad Media</option>
-                                    <option value="alta">Prioridad Alta</option>
-                                    <option value="baja">Prioridad Baja</option>
-                                </select>
-                            </div>
-                            <div class="col-6">
-                                <select id="tActivo" class="form-select bg-light border-0">
+                            <div class="col-6"><select id="tprio" class="form-select bg-light border-0">
+                                    <option value="media">Media</option>
+                                    <option value="alta">Alta</option>
+                                    <option value="baja">Baja</option>
+                                </select></div>
+                            <div class="col-6"><select id="tact" class="form-select bg-light border-0">
                                     <option value="">Sin Activo</option>
-                                </select>
-                            </div>
-                        </div>
-                        <button type="submit" class="btn btn-primary w-100 rounded-pill py-2">Crear Solicitud</button>
+                                </select></div>
+                        </div><button type="submit" class="btn btn-primary w-100 rounded-pill">Crear</button>
                     </form>
                 </div>
             </div>
@@ -369,27 +303,30 @@
     <div class="modal fade" id="chatModal" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered modal-lg">
             <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden" style="height: 600px;">
-                <div class="modal-header bg-light border-0 py-3">
-                    <div class="d-flex align-items-center">
-                        <div class="avatar-circle bg-primary text-white me-2">TK</div>
-                        <div>
-                            <h6 class="mb-0 fw-bold">Ticket #<span id="chatTicketId"></span></h6>
-                            <small class="text-muted" id="chatTicketTitle">Cargando...</small>
-                        </div>
+                <div class="modal-header bg-light border-0 py-3 d-flex align-items-center">
+                    <div class="avatar-circle bg-primary text-white me-2">TK</div>
+                    <div>
+                        <h6 class="mb-0 fw-bold">Ticket #<span id="cId"></span></h6><small class="text-muted"
+                            id="cTitle">Cargando...</small>
                     </div>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    <button type="button" class="btn-close ms-auto" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body p-0 d-flex flex-column bg-light">
-                    <div id="chatBox" class="chat-messages">
-                    </div>
+                    <div id="chatBox" class="chat-messages"></div>
                     <div class="p-3 bg-white border-top">
-                        <form id="chatForm" class="d-flex gap-2">
-                            <select id="chatUser" class="form-select border-0 bg-light" style="width: 120px;">
+                        <form id="chatForm" class="d-flex gap-2 align-items-center">
+                            <input type="file" id="fileInput" accept="image/*" style="display: none;"
+                                onchange="handleFileSelect(this)">
+
+                            <button type="button" class="btn btn-light rounded-circle border"
+                                onclick="document.getElementById('fileInput').click()" title="Adjuntar imagen"><i
+                                    class="fas fa-paperclip text-muted"></i></button>
+                            <select id="cUser" class="form-select border-0 bg-light" style="width: 110px;">
                                 <option value="Soporte">Soporte</option>
                                 <option value="Cliente">Cliente</option>
                             </select>
-                            <input type="text" id="chatInput" class="form-control border-0 bg-light"
-                                placeholder="Escribe un mensaje..." autocomplete="off" required>
+                            <input type="text" id="cInput" class="form-control border-0 bg-light"
+                                placeholder="Escribe..." autocomplete="off">
                             <button type="submit" class="btn btn-primary rounded-circle shadow-sm"
                                 style="width: 40px; height: 40px;"><i class="fas fa-paper-plane"></i></button>
                         </form>
@@ -402,228 +339,158 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         const API = window.location.origin + "/api";
-        let currentChatId = null;
-        let chartInstance = null;
+        let curId = null, chart = null;
 
-        // --- INICIALIZACIÓN ---
-        document.addEventListener('DOMContentLoaded', () => {
-            loadAll();
-            initChart();
-        });
+        document.addEventListener('DOMContentLoaded', () => { loadAll(); initChart(); });
 
         async function loadAll() {
-            await Promise.all([loadActivos(), loadTickets()]);
-        }
+            const [acts, ticks] = await Promise.all([fetch(API + '/activos').then(r => r.json()), fetch(API + '/tickets').then(r => r.json())]);
 
-        // --- MODO OSCURO ---
-        function toggleTheme() {
-            const html = document.documentElement;
-            const isDark = html.getAttribute('data-bs-theme') === 'dark';
-            html.setAttribute('data-bs-theme', isDark ? 'light' : 'dark');
-            const icon = document.getElementById('themeToggle').querySelector('i');
-            icon.className = isDark ? 'fas fa-moon' : 'fas fa-sun';
-            updateChartTheme(!isDark);
-        }
+            // Activos
+            document.getElementById('k-assets').innerText = acts.length;
+            const tbA = document.getElementById('activosTable'), sel = document.getElementById('tact');
+            tbA.innerHTML = ''; sel.innerHTML = '<option value="">Sin Activo</option>';
+            acts.forEach(a => {
+                sel.innerHTML += `<option value="${a.id}">${a.nombre}</option>`;
+                tbA.innerHTML += `<tr><td class="ps-4 fw-bold">${a.nombre}<br><small class="text-muted">${a.tipo}</small></td><td><code>${a.serial}</code></td><td class="text-end pe-4"><button class="btn btn-link text-danger" onclick="delAct(${a.id})"><i class="fas fa-trash"></i></button></td></tr>`;
+            });
 
-        // --- GESTIÓN DE TICKETS ---
-        async function loadTickets() {
-            const res = await fetch(API + '/tickets');
-            const tickets = await res.json();
-
-            const tbody = document.getElementById('ticketTable');
-            tbody.innerHTML = '';
-
-            let counts = { open: 0, total: tickets.length };
-            let statusData = { abierto: 0, cerrado: 0 };
-
-            tickets.forEach(t => {
-                if (t.estado === 'abierto') counts.open++;
-                statusData[t.estado]++;
-
-                const prioColor = t.prioridad === 'alta' ? 'danger' : (t.prioridad === 'media' ? 'warning' : 'success');
-                const rowOpacity = t.estado === 'cerrado' ? '0.5' : '1';
-
-                tbody.innerHTML += `
-                    <tr style="opacity: ${rowOpacity}" onclick="openChat(${t.id}, '${t.titulo}')">
+            // Tickets
+            const tbT = document.getElementById('ticketTable'); tbT.innerHTML = '';
+            let open = 0, closed = 0;
+            ticks.forEach(t => {
+                if (t.estado === 'abierto') open++; else closed++;
+                const op = t.estado === 'cerrado' ? 0.5 : 1;
+                tbT.innerHTML += `
+                    <tr style="opacity:${op}" onclick="openChat(${t.id}, '${t.titulo}')">
                         <td class="ps-4 fw-bold text-muted">#${t.id}</td>
-                        <td>
-                            <div class="fw-bold text-truncate" style="max-width: 200px;">${t.titulo}</div>
-                            <small class="text-muted d-block text-truncate" style="max-width: 250px;">${t.descripcion}</small>
-                        </td>
-                        <td><span class="badge bg-${prioColor}-subtle text-${prioColor} border border-${prioColor} rounded-pill">${t.prioridad}</span></td>
-                        <td>${t.activo_nombre ? `<i class="fas fa-laptop text-primary small me-1"></i>${t.activo_nombre}` : '<span class="text-muted">-</span>'}</td>
+                        <td><div class="fw-bold">${t.titulo}</div></td>
+                        <td><span class="badge bg-${t.prioridad === 'alta' ? 'danger' : (t.prioridad === 'media' ? 'warning' : 'success')}-subtle text-dark border">${t.prioridad}</span></td>
+                        <td>${t.activo_nombre || '-'}</td>
                         <td><span class="badge bg-${t.estado === 'abierto' ? 'warning' : 'secondary'}">${t.estado}</span></td>
                         <td class="text-end pe-4" onclick="event.stopPropagation()">
-                            ${t.estado === 'abierto'
-                        ? `<button class="btn btn-sm btn-outline-success rounded-circle" onclick="updateStatus(${t.id}, 'cerrado')" title="Cerrar"><i class="fas fa-check"></i></button>`
-                        : `<button class="btn btn-sm btn-outline-secondary rounded-circle" onclick="updateStatus(${t.id}, 'abierto')" title="Reabrir"><i class="fas fa-undo"></i></button>`
-                    }
-                            <button class="btn btn-sm btn-outline-danger rounded-circle ms-1" onclick="deleteTicket(${t.id})" title="Borrar"><i class="fas fa-trash"></i></button>
+                            ${t.estado === 'abierto' ? `<button class="btn btn-sm btn-outline-success rounded-circle" onclick="updSt(${t.id},'cerrado')"><i class="fas fa-check"></i></button>` : `<button class="btn btn-sm btn-outline-secondary rounded-circle" onclick="updSt(${t.id},'abierto')"><i class="fas fa-undo"></i></button>`}
+                            <button class="btn btn-sm btn-outline-danger rounded-circle ms-1" onclick="delTick(${t.id})"><i class="fas fa-trash"></i></button>
                         </td>
                     </tr>
                 `;
             });
-
-            // Actualizar KPIs
-            document.getElementById('kpi-tickets').innerText = counts.total;
-            document.getElementById('kpi-pendientes').innerText = counts.open;
-            updateChartData(statusData);
+            document.getElementById('k-total').innerText = ticks.length;
+            document.getElementById('k-open').innerText = open;
+            updateChart(open, closed);
         }
 
-        async function createTicket(e) {
-            e.preventDefault();
-            const data = {
-                titulo: document.getElementById('tTitulo').value,
-                descripcion: document.getElementById('tDesc').value,
-                prioridad: document.getElementById('tPrio').value,
-                activo_id: document.getElementById('tActivo').value || null
-            };
-            await fetch(API + '/tickets', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
-            bootstrap.Modal.getInstance(document.getElementById('newTicketModal')).hide();
-            e.target.reset();
-            Swal.fire({ icon: 'success', title: 'Ticket Creado', timer: 1500, showConfirmButton: false });
-            loadTickets();
-        }
-
-        // --- GESTIÓN DE ACTIVOS ---
-        async function loadActivos() {
-            const res = await fetch(API + '/activos');
-            const activos = await res.json();
-
-            document.getElementById('kpi-activos').innerText = activos.length;
-
-            // Llenar tabla y select
-            const tbody = document.getElementById('activosTable');
-            const select = document.getElementById('tActivo');
-            tbody.innerHTML = '';
-            select.innerHTML = '<option value="">Sin Activo</option>';
-
-            activos.forEach(a => {
-                select.innerHTML += `<option value="${a.id}">${a.nombre}</option>`;
-                tbody.innerHTML += `
-                    <tr>
-                        <td class="ps-4 fw-bold">${a.nombre}</td>
-                        <td><span class="badge bg-light text-dark border">${a.tipo}</span></td>
-                        <td class="font-monospace text-muted small">${a.serial}</td>
-                        <td class="text-end pe-4">
-                            <button class="btn btn-sm btn-link text-danger" onclick="deleteActivo(${a.id})"><i class="fas fa-trash"></i></button>
-                        </td>
-                    </tr>
-                `;
-            });
-        }
-
-        async function createActivo(e) {
-            e.preventDefault();
-            await fetch(API + '/activos', {
-                method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({
-                    nombre: document.getElementById('actNombre').value,
-                    tipo: document.getElementById('actTipo').value,
-                    serial: document.getElementById('actSerial').value
-                })
-            });
-            e.target.reset();
-            Swal.fire({ icon: 'success', title: 'Activo Guardado', toast: true, position: 'top-end', timer: 2000, showConfirmButton: false });
-            loadActivos();
-        }
-
-        // --- CHAT SYSTEM ---
+        // --- CHAT MULTIMEDIA ---
         async function openChat(id, title) {
-            currentChatId = id;
-            document.getElementById('chatTicketId').innerText = id;
-            document.getElementById('chatTicketTitle').innerText = title;
+            curId = id; document.getElementById('cId').innerText = id; document.getElementById('cTitle').innerText = title;
             new bootstrap.Modal(document.getElementById('chatModal')).show();
-            loadMessages();
+            loadMsgs();
         }
 
-        async function loadMessages() {
-            const res = await fetch(`${API}/tickets/${currentChatId}/mensajes`);
-            const msgs = await res.json();
-            const box = document.getElementById('chatBox');
-            box.innerHTML = '';
-
-            if (msgs.length === 0) {
-                box.innerHTML = '<div class="text-center mt-5 text-muted opacity-50"><i class="far fa-comments fa-3x mb-2"></i><br>No hay mensajes aún</div>';
-            }
+        async function loadMsgs() {
+            const msgs = await fetch(`${API}/tickets/${curId}/mensajes`).then(r => r.json());
+            const box = document.getElementById('chatBox'); box.innerHTML = '';
+            if (!msgs.length) box.innerHTML = '<div class="text-center mt-5 text-muted opacity-50"><i class="far fa-comments fa-2x"></i><br>Sin mensajes</div>';
 
             msgs.forEach(m => {
-                const isMe = m.autor === 'Soporte';
-                const initials = m.autor.substring(0, 2).toUpperCase();
-                const time = new Date(m.fecha).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-
-                box.innerHTML += `
-                    <div class="message-wrapper ${isMe ? 'me' : 'other'}">
-                        <div class="avatar-circle ${isMe ? 'bg-primary text-white' : 'bg-white border'}">${initials}</div>
-                        <div>
-                            <div class="message-bubble">${m.contenido}</div>
-                            <div class="msg-time">${time}</div>
-                        </div>
-                    </div>
-                `;
+                if (m.tipo === 'evento') {
+                    box.innerHTML += `<div class="message-system"><i class="fas fa-info-circle me-1"></i>${m.contenido}</div>`;
+                } else {
+                    const isMe = m.autor === 'Soporte';
+                    const content = m.tipo === 'imagen' ? `<img src="${m.contenido}" class="chat-img" onclick="window.open(this.src)">` : m.contenido;
+                    box.innerHTML += `
+                        <div class="message-wrapper ${isMe ? 'me' : 'other'}">
+                            <div class="avatar-circle ${isMe ? 'bg-primary text-white' : 'bg-white border'}">${m.autor.substring(0, 2)}</div>
+                            <div class="message-bubble">${content}<div class="msg-time">${new Date(m.fecha).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div></div>
+                        </div>`;
+                }
             });
             box.scrollTop = box.scrollHeight;
         }
 
-        async function sendMsg(e) {
+        // SUBIR IMAGEN (COMPRESIÓN)
+        function handleFileSelect(input) {
+            if (input.files && input.files[0]) {
+                const file = input.files[0];
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    // Crear imagen para reducir tamaño
+                    const img = new Image();
+                    img.src = e.target.result;
+                    img.onload = function () {
+                        const canvas = document.createElement('canvas');
+                        const ctx = canvas.getContext('2d');
+                        const maxWidth = 800; // Reducir a 800px ancho
+                        const scale = maxWidth / img.width;
+                        canvas.width = maxWidth;
+                        canvas.height = img.height * scale;
+                        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                        const base64 = canvas.toDataURL('image/jpeg', 0.7); // Calidad 70%
+                        enviarMensaje(base64, 'imagen');
+                    }
+                }
+                reader.readAsDataURL(file);
+            }
+            input.value = ''; // Limpiar
+        }
+
+        document.getElementById('chatForm').addEventListener('submit', (e) => {
             e.preventDefault();
-            const input = document.getElementById('chatInput');
-            await fetch(`${API}/tickets/${currentChatId}/mensajes`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ autor: document.getElementById('chatUser').value, contenido: input.value })
+            const txt = document.getElementById('cInput').value;
+            if (txt.trim()) enviarMensaje(txt, 'texto');
+        });
+
+        async function enviarMensaje(contenido, tipo) {
+            const autor = document.getElementById('cUser').value;
+            await fetch(`${API}/tickets/${curId}/mensajes`, {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ autor, contenido, tipo })
             });
-            input.value = '';
-            loadMessages();
+            document.getElementById('cInput').value = '';
+            loadMsgs();
         }
 
         // --- UTILIDADES ---
-        function mostrarModalTicket() { new bootstrap.Modal(document.getElementById('newTicketModal')).show(); }
-
-        async function updateStatus(id, status) {
-            await fetch(`${API}/tickets/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ estado: status }) });
-            loadTickets();
+        async function updSt(id, st) { await fetch(`${API}/tickets/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ estado: st, autor_cambio: 'Soporte' }) }); loadAll(); }
+        async function delTick(id) { if (confirm('¿Borrar?')) { await fetch(`${API}/tickets/${id}`, { method: 'DELETE' }); loadAll(); } }
+        async function delAct(id) { const r = await fetch(`${API}/activos/${id}`, { method: 'DELETE' }); if (r.ok) loadAll(); else Swal.fire('Error', 'Tiene tickets asociados', 'error'); }
+        function modalNew() { new bootstrap.Modal(document.getElementById('newTicketModal')).show(); }
+        function toggleTheme() {
+            const html = document.documentElement; html.setAttribute('data-bs-theme', html.getAttribute('data-bs-theme') === 'dark' ? 'light' : 'dark');
         }
 
-        async function deleteTicket(id) {
-            const res = await Swal.fire({ title: '¿Borrar?', text: "Esta acción es irreversible", icon: 'warning', showCancelButton: true, confirmButtonText: 'Sí, borrar' });
-            if (res.isConfirmed) { await fetch(`${API}/tickets/${id}`, { method: 'DELETE' }); loadTickets(); }
-        }
+        // CREAR TICKET
+        document.getElementById('ticketForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            await fetch(API + '/tickets', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({
+                    titulo: document.getElementById('ttit').value,
+                    descripcion: document.getElementById('tdesc').value,
+                    prioridad: document.getElementById('tprio').value,
+                    activo_id: document.getElementById('tact').value || null
+                })
+            });
+            bootstrap.Modal.getInstance(document.getElementById('newTicketModal')).hide(); e.target.reset(); loadAll();
+        });
 
-        async function deleteActivo(id) {
-            const res = await fetch(`${API}/activos/${id}`, { method: 'DELETE' });
-            if (res.ok) loadActivos();
-            else Swal.fire('Error', 'No puedes borrar activos con tickets asociados', 'error');
-        }
+        // CREAR ACTIVO
+        document.getElementById('activoForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            await fetch(API + '/activos', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({
+                    nombre: document.getElementById('aname').value,
+                    tipo: document.getElementById('atype').value,
+                    serial: document.getElementById('aserial').value
+                })
+            });
+            e.target.reset(); loadAll();
+        });
 
-        // --- GRÁFICO (CHART.JS) ---
         function initChart() {
             const ctx = document.getElementById('statusChart').getContext('2d');
-            chartInstance = new Chart(ctx, {
-                type: 'doughnut',
-                data: {
-                    labels: ['Abiertos', 'Cerrados'],
-                    datasets: [{ data: [0, 0], backgroundColor: ['#ffc107', '#198754'], borderWidth: 0 }]
-                },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, cutout: '70%' }
-            });
+            chart = new Chart(ctx, { type: 'doughnut', data: { labels: ['Abiertos', 'Cerrados'], datasets: [{ data: [0, 0], backgroundColor: ['#ffc107', '#198754'], borderWidth: 0 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, cutout: '75%' } });
         }
-
-        function updateChartData(data) {
-            if (chartInstance) {
-                chartInstance.data.datasets[0].data = [data.abierto, data.cerrado];
-                chartInstance.update();
-            }
-        }
-
-        function updateChartTheme(isDark) {
-            // Futuras personalizaciones del gráfico para modo oscuro
-        }
-
-        // Listeners
-        document.getElementById('ticketForm').addEventListener('submit', createTicket);
-        document.getElementById('activoForm').addEventListener('submit', createActivo);
-        document.getElementById('chatForm').addEventListener('submit', sendMsg);
-
+        function updateChart(o, c) { if (chart) { chart.data.datasets[0].data = [o, c]; chart.update(); } }
     </script>
 </body>
 
