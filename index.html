@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Northgate Workspace</title>
+    <title>Northgate Workspace V8</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -100,7 +100,25 @@
             cursor: pointer;
         }
 
-        /* DARK MODE OVERRIDES */
+        .chat-file {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 5px 10px;
+            border-radius: 5px;
+            margin-top: 5px;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            text-decoration: none;
+            color: inherit;
+            font-size: 0.85rem;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .chat-file:hover {
+            background: rgba(255, 255, 255, 0.4);
+        }
+
+        /* DARK MODE */
         [data-bs-theme="dark"] .bg-white,
         [data-bs-theme="dark"] .bg-light {
             background-color: #212529 !important;
@@ -114,6 +132,11 @@
         [data-bs-theme="dark"] .msg.other {
             background: #2c2c2c;
             color: white;
+            border-color: #444;
+        }
+
+        [data-bs-theme="dark"] .chat-file {
+            background: rgba(255, 255, 255, 0.1);
             border-color: #444;
         }
 
@@ -173,8 +196,7 @@
             </div>
             <div class="col-md-3">
                 <div class="card h-100 border-0 shadow-sm p-2 d-flex align-items-center justify-content-center">
-                    <div style="height: 140px; width: 100%; position: relative;">
-                        <canvas id="statusChart"></canvas>
+                    <div style="height: 140px; width: 100%; position: relative;"><canvas id="statusChart"></canvas>
                     </div>
                 </div>
             </div>
@@ -205,21 +227,18 @@
                     </table>
                 </div>
             </div>
-
             <div class="tab-pane fade" id="tab-activos">
                 <div class="row">
                     <div class="col-md-4">
                         <div class="card border-0 shadow-sm p-3">
                             <h6>Nuevo Activo</h6>
-                            <form id="activoForm">
-                                <input type="text" id="aname" class="form-control mb-2" placeholder="Nombre" required>
-                                <select id="atype" class="form-select mb-2">
+                            <form id="activoForm"><input type="text" id="aname" class="form-control mb-2"
+                                    placeholder="Nombre" required><select id="atype" class="form-select mb-2">
                                     <option>Laptop</option>
                                     <option>Monitor</option>
                                     <option>Móvil</option>
-                                </select>
-                                <input type="text" id="aserial" class="form-control mb-2" placeholder="Serial" required>
-                                <button type="submit" class="btn btn-sm btn-success w-100">Guardar</button>
+                                </select><input type="text" id="aserial" class="form-control mb-2" placeholder="Serial"
+                                    required><button type="submit" class="btn btn-sm btn-success w-100">Guardar</button>
                             </form>
                         </div>
                     </div>
@@ -256,7 +275,7 @@
                     <div id="chatBox" class="chat-box"></div>
                     <div class="p-3 bg-white border-top">
                         <form id="chatForm" class="d-flex gap-2">
-                            <input type="file" id="fInput" hidden accept="image/*" onchange="uploadImg(this)">
+                            <input type="file" id="fInput" hidden onchange="uploadFile(this)">
                             <button type="button" class="btn btn-light border rounded-circle"
                                 onclick="document.getElementById('fInput').click()"><i
                                     class="fas fa-paperclip"></i></button>
@@ -300,41 +319,24 @@
     <script>
         const API = window.location.origin + "/api";
         let USER = JSON.parse(localStorage.getItem('ng_user'));
-        let CUR_ID = null, CHART = null;
+        let CUR_ID = null, CHART = null, POLLING = null;
 
-        if (!USER) window.location.href = '/'; // Seguridad básica
+        if (!USER) window.location.href = '/';
 
-        document.addEventListener('DOMContentLoaded', () => {
-            setupUI();
-            loadAll();
-        });
+        document.addEventListener('DOMContentLoaded', () => { setupUI(); loadAll(); });
 
         function setupUI() {
-            // Mostrar datos usuario
             document.getElementById('userName').innerText = USER.nombre;
             document.getElementById('userInitials').innerText = USER.nombre.substring(0, 1);
             document.getElementById('userRoleBadge').innerText = USER.rol.toUpperCase();
-
-            // Ocultar elementos según rol (RBAC Frontend)
-            if (USER.rol === 'usuario') {
-                document.querySelectorAll('.role-staff-only').forEach(el => el.style.display = 'none');
-                document.querySelectorAll('.role-admin-only').forEach(el => el.style.display = 'none');
-            }
-            if (USER.rol === 'tecnico') {
-                document.querySelectorAll('.role-admin-only').forEach(el => el.style.display = 'none');
-            }
-
+            if (USER.rol === 'usuario') { document.querySelectorAll('.role-staff-only, .role-admin-only').forEach(el => el.style.display = 'none'); }
+            if (USER.rol === 'tecnico') { document.querySelectorAll('.role-admin-only').forEach(el => el.style.display = 'none'); }
             initChart();
         }
 
         async function loadAll() {
-            // Cargar datos con filtro de usuario/rol
-            const [acts, ticks] = await Promise.all([
-                fetch(API + '/activos').then(r => r.json()),
-                fetch(`${API}/tickets?user_id=${USER.id}&rol=${USER.rol}`).then(r => r.json())
-            ]);
+            const [acts, ticks] = await Promise.all([fetch(API + '/activos').then(r => r.json()), fetch(`${API}/tickets?user_id=${USER.id}&rol=${USER.rol}`).then(r => r.json())]);
 
-            // Tabla Activos (Admin/Tec)
             const tbA = document.getElementById('activosTable'), sel = document.getElementById('tact');
             tbA.innerHTML = ''; sel.innerHTML = '<option value="">Sin Activo</option>';
             acts.forEach(a => {
@@ -344,153 +346,88 @@
             });
             document.getElementById('k-assets').innerText = acts.length;
 
-            // Tabla Tickets
             const tbT = document.getElementById('ticketTable'); tbT.innerHTML = '';
             let open = 0, closed = 0;
             ticks.forEach(t => {
                 if (t.estado === 'abierto') open++; else closed++;
-                const isMyTicket = t.creador_id === USER.id;
-                const canManage = USER.rol === 'admin' || USER.rol === 'tecnico';
-
-                // Botones acciones
                 let actions = `<button class="btn btn-sm btn-primary me-1" onclick="openChat(${t.id}, '${t.titulo}')"><i class="fas fa-comments"></i></button>`;
-                if (canManage) {
-                    actions += t.estado === 'abierto'
-                        ? `<button class="btn btn-sm btn-outline-success me-1" onclick="updSt(${t.id},'cerrado')"><i class="fas fa-check"></i></button>`
-                        : `<button class="btn btn-sm btn-outline-secondary me-1" onclick="updSt(${t.id},'abierto')"><i class="fas fa-undo"></i></button>`;
-                }
+                if (USER.rol !== 'usuario') actions += t.estado === 'abierto' ? `<button class="btn btn-sm btn-outline-success me-1" onclick="updSt(${t.id},'cerrado')"><i class="fas fa-check"></i></button>` : `<button class="btn btn-sm btn-outline-secondary me-1" onclick="updSt(${t.id},'abierto')"><i class="fas fa-undo"></i></button>`;
                 if (USER.rol === 'admin') actions += `<button class="btn btn-sm btn-outline-danger" onclick="delTick(${t.id})"><i class="fas fa-trash"></i></button>`;
-
-                tbT.innerHTML += `
-                    <tr>
-                        <td class="ps-4"><div class="fw-bold">${t.titulo}</div><small class="text-muted">${t.activo_nombre || '-'}</small></td>
-                        <td><small>${t.creador_nombre}</small></td>
-                        <td><span class="badge bg-${t.prioridad === 'alta' ? 'danger' : 'warning'}-subtle text-dark">${t.prioridad}</span></td>
-                        <td><span class="badge bg-${t.estado === 'abierto' ? 'success' : 'secondary'}">${t.estado}</span></td>
-                        <td class="text-end pe-4">${actions}</td>
-                    </tr>`;
+                tbT.innerHTML += `<tr><td class="ps-4"><div class="fw-bold">${t.titulo}</div><small class="text-muted">${t.activo_nombre || '-'}</small></td><td><small>${t.creador_nombre}</small></td><td><span class="badge bg-${t.prioridad === 'alta' ? 'danger' : 'warning'}-subtle text-dark">${t.prioridad}</span></td><td><span class="badge bg-${t.estado === 'abierto' ? 'success' : 'secondary'}">${t.estado}</span></td><td class="text-end pe-4">${actions}</td></tr>`;
             });
-            document.getElementById('k-total').innerText = ticks.length;
-            document.getElementById('k-open').innerText = open;
-            updateChart(open, closed);
+            document.getElementById('k-total').innerText = ticks.length; document.getElementById('k-open').innerText = open; updateChart(open, closed);
         }
 
-        // CHAT
         async function openChat(id, title) {
-            CUR_ID = id;
-            document.getElementById('cTitle').innerText = title;
-            document.getElementById('cId').innerText = id;
+            CUR_ID = id; document.getElementById('cTitle').innerText = title; document.getElementById('cId').innerText = id;
             new bootstrap.Modal(document.getElementById('chatModal')).show();
             loadMsgs();
+            if (POLLING) clearInterval(POLLING);
+            POLLING = setInterval(loadMsgs, 3000); // Polling cada 3 segundos
         }
+
+        // Detectar cierre del modal para parar el polling
+        document.getElementById('chatModal').addEventListener('hidden.bs.modal', () => { if (POLLING) clearInterval(POLLING); CUR_ID = null; });
 
         async function loadMsgs() {
             if (!CUR_ID) return;
             const msgs = await fetch(`${API}/tickets/${CUR_ID}/mensajes`).then(r => r.json());
-            const box = document.getElementById('chatBox'); box.innerHTML = '';
-            msgs.forEach(m => {
-                if (m.tipo === 'evento') {
-                    box.innerHTML += `<div class="msg system">${m.contenido}</div>`;
-                } else {
-                    const isMe = m.autor_id === USER.id;
-                    const content = m.tipo === 'imagen' ? `<img src="${m.contenido}" class="chat-img" onclick="window.open(this.src)">` : m.contenido;
-                    box.innerHTML += `<div class="msg ${isMe ? 'me' : 'other'}"><strong>${m.autor_nombre}</strong><br>${content}</div>`;
-                }
-            });
-            box.scrollTop = box.scrollHeight;
+            const box = document.getElementById('chatBox');
+            // Solo redibujar si hay cambios (comparación simple por longitud para no saturar)
+            if (box.childElementCount !== msgs.length) {
+                box.innerHTML = '';
+                msgs.forEach(m => {
+                    if (m.tipo === 'evento') box.innerHTML += `<div class="msg system">${m.contenido}</div>`;
+                    else {
+                        const isMe = m.autor_id === USER.id;
+                        let content = m.contenido;
+                        if (m.tipo === 'imagen') content = `<img src="${m.contenido}" class="chat-img" onclick="window.open(this.src)">`;
+                        else if (m.tipo === 'archivo') content = `<a href="${m.contenido}" download="archivo.pdf" class="chat-file"><i class="fas fa-file-pdf"></i> Archivo Adjunto (Click para descargar)</a>`;
+                        box.innerHTML += `<div class="msg ${isMe ? 'me' : 'other'}"><strong>${m.autor_nombre}</strong><br>${content}</div>`;
+                    }
+                });
+                box.scrollTop = box.scrollHeight;
+            }
         }
 
-        document.getElementById('chatForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const txt = document.getElementById('cInput').value;
-            if (txt) sendMsg(txt, 'texto');
-        });
+        document.getElementById('chatForm').addEventListener('submit', (e) => { e.preventDefault(); const t = document.getElementById('cInput').value; if (t) sendMsg(t, 'texto'); });
 
         async function sendMsg(content, type) {
-            await fetch(`${API}/tickets/${CUR_ID}/mensajes`, {
-                method: 'POST', headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ usuario_id: USER.id, contenido: content, tipo: type })
-            });
+            await fetch(`${API}/tickets/${CUR_ID}/mensajes`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ usuario_id: USER.id, contenido: content, tipo: type }) });
             document.getElementById('cInput').value = ''; loadMsgs();
         }
 
-        // ACCIONES
+        function uploadFile(inp) {
+            const f = inp.files[0]; if (!f) return;
+            const reader = new FileReader();
+            reader.onload = e => {
+                const res = e.target.result;
+                if (f.type.startsWith('image/')) {
+                    // Compresión de imagen (Canvas)
+                    const i = new Image(); i.src = res;
+                    i.onload = () => {
+                        const c = document.createElement('canvas'), ctx = c.getContext('2d');
+                        const sc = 800 / i.width; c.width = 800; c.height = i.height * sc;
+                        ctx.drawImage(i, 0, 0, c.width, c.height);
+                        sendMsg(c.toDataURL('image/jpeg', 0.7), 'imagen');
+                    }
+                } else {
+                    // Documento (PDF, etc) - Se envía tal cual en Base64
+                    sendMsg(res, 'archivo');
+                }
+            };
+            reader.readAsDataURL(f); inp.value = '';
+        }
+
         async function updSt(id, st) { await fetch(`${API}/tickets/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ estado: st, usuario_id: USER.id }) }); loadAll(); }
         async function delTick(id) { if (confirm('¿Borrar?')) { await fetch(`${API}/tickets/${id}`, { method: 'DELETE' }); loadAll(); } }
         async function delAct(id) { const r = await fetch(`${API}/activos/${id}`, { method: 'DELETE' }); if (r.ok) loadAll(); else Swal.fire('Error', 'En uso', 'error'); }
-
-        // FORMULARIOS
-        document.getElementById('ticketForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            await fetch(API + '/tickets', {
-                method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({
-                    titulo: document.getElementById('ttit').value, descripcion: document.getElementById('tdesc').value,
-                    prioridad: document.getElementById('tprio').value, activo_id: document.getElementById('tact').value || null,
-                    usuario_id: USER.id
-                })
-            });
-            bootstrap.Modal.getInstance(document.getElementById('newTicketModal')).hide(); e.target.reset(); loadAll();
-        });
-
-        document.getElementById('activoForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            await fetch(API + '/activos', {
-                method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({
-                    nombre: document.getElementById('aname').value, tipo: document.getElementById('atype').value, serial: document.getElementById('aserial').value
-                })
-            });
-            e.target.reset(); loadAll();
-        });
-
-        // HELPERS
+        document.getElementById('ticketForm').addEventListener('submit', async (e) => { e.preventDefault(); await fetch(API + '/tickets', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ titulo: document.getElementById('ttit').value, descripcion: document.getElementById('tdesc').value, prioridad: document.getElementById('tprio').value, activo_id: document.getElementById('tact').value || null, usuario_id: USER.id }) }); bootstrap.Modal.getInstance(document.getElementById('newTicketModal')).hide(); e.target.reset(); loadAll(); });
+        document.getElementById('activoForm').addEventListener('submit', async (e) => { e.preventDefault(); await fetch(API + '/activos', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ nombre: document.getElementById('aname').value, tipo: document.getElementById('atype').value, serial: document.getElementById('aserial').value }) }); e.target.reset(); loadAll(); });
         function logout() { localStorage.removeItem('ng_user'); window.location.href = '/'; }
         function modalNew() { new bootstrap.Modal(document.getElementById('newTicketModal')).show(); }
         function toggleTheme() { const h = document.documentElement; h.setAttribute('data-bs-theme', h.getAttribute('data-bs-theme') === 'dark' ? 'light' : 'dark'); }
-        function uploadImg(inp) {
-            const f = inp.files[0]; if (!f) return;
-            const r = new FileReader(); r.onload = e => {
-                const i = new Image(); i.src = e.target.result;
-                i.onload = () => {
-                    const c = document.createElement('canvas'), ctx = c.getContext('2d');
-                    const sc = 800 / i.width; c.width = 800; c.height = i.height * sc;
-                    ctx.drawImage(i, 0, 0, c.width, c.height);
-                    sendMsg(c.toDataURL('image/jpeg', 0.7), 'imagen');
-                }
-            }; r.readAsDataURL(f); inp.value = '';
-        }
-        function initChart() {
-            const ctx = document.getElementById('statusChart').getContext('2d');
-            CHART = new Chart(ctx, {
-                type: 'doughnut',
-                data: {
-                    labels: ['Abierto', 'Cerrado'],
-                    datasets: [{
-                        data: [0, 0],
-                        backgroundColor: ['#ffc107', '#198754'],
-                        borderWidth: 0,
-                        hoverOffset: 4
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false, // ¡Esto es clave para que no se agrande!
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: {
-                            callbacks: {
-                                label: function (context) {
-                                    return ' ' + context.label + ': ' + context.raw;
-                                }
-                            }
-                        }
-                    },
-                    cutout: '75%', // Hace el anillo más fino y elegante
-                    layout: {
-                        padding: 10
-                    }
-                }
-            });
-        }
+        function initChart() { const ctx = document.getElementById('statusChart').getContext('2d'); CHART = new Chart(ctx, { type: 'doughnut', data: { labels: ['Abierto', 'Cerrado'], datasets: [{ data: [0, 0], backgroundColor: ['#ffc107', '#198754'], borderWidth: 0 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, cutout: '75%' } }); }
         function updateChart(o, c) { if (CHART) { CHART.data.datasets[0].data = [o, c]; CHART.update(); } }
     </script>
 </body>
