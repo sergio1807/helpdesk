@@ -172,7 +172,11 @@
                 </div>
             </div>
             <div class="col-md-3">
-                <div class="card h-100 border-0 shadow-sm p-2"><canvas id="statusChart"></canvas></div>
+                <div class="card h-100 border-0 shadow-sm p-2 d-flex align-items-center justify-content-center">
+                    <div style="height: 140px; width: 100%; position: relative;">
+                        <canvas id="statusChart"></canvas>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -454,7 +458,39 @@
                 }
             }; r.readAsDataURL(f); inp.value = '';
         }
-        function initChart() { const ctx = document.getElementById('statusChart').getContext('2d'); CHART = new Chart(ctx, { type: 'doughnut', data: { labels: ['Abierto', 'Cerrado'], datasets: [{ data: [0, 0], backgroundColor: ['#ffc107', '#198754'], borderWidth: 0 }] }, options: { plugins: { legend: { display: false } }, cutout: '70%' } }); }
+        function initChart() {
+            const ctx = document.getElementById('statusChart').getContext('2d');
+            CHART = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Abierto', 'Cerrado'],
+                    datasets: [{
+                        data: [0, 0],
+                        backgroundColor: ['#ffc107', '#198754'],
+                        borderWidth: 0,
+                        hoverOffset: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false, // ¡Esto es clave para que no se agrande!
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function (context) {
+                                    return ' ' + context.label + ': ' + context.raw;
+                                }
+                            }
+                        }
+                    },
+                    cutout: '75%', // Hace el anillo más fino y elegante
+                    layout: {
+                        padding: 10
+                    }
+                }
+            });
+        }
         function updateChart(o, c) { if (CHART) { CHART.data.datasets[0].data = [o, c]; CHART.update(); } }
     </script>
 </body>
