@@ -146,35 +146,56 @@
             --bs-table-bg: transparent;
         }
 
-        /* --- CORRECCIONES MODO OSCURO PARA EL CHAT --- */
+
+        /* --- FIX AGRESIVO MODO OSCURO --- */
+
+        /* 1. Fondo del Modal y Textos */
         [data-bs-theme="dark"] .modal-content {
-            background-color: var(--bs-body-bg);
-            /* Usa el fondo oscuro principal */
+            background-color: #212529 !important;
+            /* Fondo gris oscuro */
+            color: #e9ecef !important;
+            /* Texto claro */
+            border: 1px solid #495057;
         }
 
-        [data-bs-theme="dark"] .modal-header,
-        [data-bs-theme="dark"] .modal-body .p-3.bg-white {
-            background-color: var(--bs-tertiary-bg) !important;
-            /* Cabecera y pie del chat oscuros */
-            border-color: var(--bs-border-color);
+        /* 2. Cabecera del Modal */
+        [data-bs-theme="dark"] .modal-header {
+            border-bottom: 1px solid #495057 !important;
+            background-color: #212529 !important;
         }
 
+        [data-bs-theme="dark"] .btn-close {
+            filter: invert(1) grayscale(100%) brightness(200%);
+            /* Hace la X blanca */
+        }
+
+        /* 3. Área de Chat (Fondo) */
         [data-bs-theme="dark"] .chat-messages {
-            background-color: var(--bs-body-bg);
-            /* Fondo del área de mensajes oscuro */
+            background-color: #1a1d20 !important;
+            /* Un poco más oscuro que el modal */
+            border: 1px solid #343a40;
         }
 
+        /* 4. Burbujas de Mensajes (Cliente/Otro) */
         [data-bs-theme="dark"] .message-wrapper.other .message-bubble {
-            background-color: var(--bs-tertiary-bg);
-            /* Burbujas del cliente más oscuras */
-            border-color: var(--bs-border-color);
+            background-color: #343a40 !important;
+            /* Gris medio */
+            color: #fff !important;
+            border: none !important;
         }
 
-        [data-bs-theme="dark"] #chatUser,
-        [data-bs-theme="dark"] #chatInput {
-            background-color: var(--bs-tertiary-bg) !important;
-            /* Inputs del chat oscuros */
-            color: var(--bs-body-color);
+        /* 5. Inputs y Selects del Chat */
+        [data-bs-theme="dark"] #chatInput,
+        [data-bs-theme="dark"] #chatUser {
+            background-color: #2b3035 !important;
+            border: 1px solid #495057 !important;
+            color: #fff !important;
+        }
+
+        /* 6. Fondo del área de escribir */
+        [data-bs-theme="dark"] .modal-body .bg-white {
+            background-color: #212529 !important;
+            border-top: 1px solid #495057 !important;
         }
     </style>
 </head>
