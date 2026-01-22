@@ -11,17 +11,17 @@ from fastapi.middleware.cors import CORSMiddleware
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+from datetime import datetime, timedelta # IMPORTANTE: Nuevas librerías de tiempo
 
-app = FastAPI(title="Northgate Helpdesk V8")
+app = FastAPI(title="Northgate Helpdesk V9")
 
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_credentials=True, allow_methods=["*"], allow_headers=["*"])
 
 DATABASE_URL = os.getenv("DATABASE_URL")
-# Configuración Email (Opcional: Configurar en Render Environment Variables)
 SMTP_SERVER = os.getenv("SMTP_SERVER", "smtp.gmail.com")
 SMTP_PORT = int(os.getenv("SMTP_PORT", 587))
 SMTP_USER = os.getenv("SMTP_USER", "tu_correo@gmail.com")
-SMTP_PASS = os.getenv("SMTP_PASS", "tu_contraseña_app")
+SMTP_PASS = os.getenv("SMTP_PASS", "tu_pass")
 
 def get_db_connection():
     try:
@@ -30,25 +30,21 @@ def get_db_connection():
         print(f"Error BD: {e}")
         return None
 
-# --- FUNCIÓN DE EMAIL (SEGUNDO PLANO) ---
 def enviar_notificacion(destinatario: str, asunto: str, cuerpo: str):
     try:
-        if "tu_correo" in SMTP_USER: return # Si no hay config real, no intenta enviar
-        
+        if "tu_correo" in SMTP_USER: return 
         msg = MIMEMultipart()
         msg['From'] = SMTP_USER
         msg['To'] = destinatario
         msg['Subject'] = f"[Northgate] {asunto}"
         msg.attach(MIMEText(cuerpo, 'plain'))
-
         server = smtplib.SMTP(SMTP_SERVER, SMTP_PORT)
         server.starttls()
         server.login(SMTP_USER, SMTP_PASS)
         server.send_message(msg)
         server.quit()
-        print(f"Email enviado a {destinatario}")
     except Exception as e:
-        print(f"Fallo envío email: {e}")
+        print(f"Error Email: {e}")
 
 # --- MODELOS ---
 class LoginReq(BaseModel):
@@ -63,7 +59,7 @@ class Ticket(BaseModel):
     usuario_id: int 
 
 class TicketEstado(BaseModel):
-    estado: str
+    estado: str # abierto, en_proceso, cerrado
     usuario_id: int
 
 class Activo(BaseModel):
@@ -74,10 +70,9 @@ class Activo(BaseModel):
 class Mensaje(BaseModel):
     usuario_id: int
     contenido: str
-    tipo: str = "texto" # texto, imagen, archivo, evento
+    tipo: str = "texto"
 
 # --- RUTAS ---
-
 @app.get("/")
 def read_root(): return FileResponse('login.html')
 
@@ -105,7 +100,7 @@ def get_tickets(user_id: int = None, rol: str = None):
         LEFT JOIN usuarios u ON t.creador_id = u.id
     """
     if rol == 'usuario' and user_id: sql += f" WHERE t.creador_id = {user_id}"
-    sql += " ORDER BY CASE WHEN t.estado = 'abierto' THEN 1 ELSE 2 END, t.id DESC"
+    sql += " ORDER BY t.fecha_limite ASC" # Ordenar por urgencia (fecha límite más cercana primero)
     cur.execute(sql)
     res = cur.fetchall()
     conn.close()
@@ -115,19 +110,26 @@ def get_tickets(user_id: int = None, rol: str = None):
 def create_ticket(t: Ticket, background_tasks: BackgroundTasks):
     conn = get_db_connection()
     cur = conn.cursor()
+    
+    # CÁLCULO DE SLA (Fecha Límite)
+    ahora = datetime.now()
+    if t.prioridad == 'alta':
+        limite = ahora + timedelta(hours=24) # 1 día
+    elif t.prioridad == 'media':
+        limite = ahora + timedelta(hours=72) # 3 días
+    else:
+        limite = ahora + timedelta(days=7)   # 1 semana
+
     try:
         cur.execute(
-            "INSERT INTO tickets (titulo, descripcion, prioridad, activo_id, creador_id) VALUES (%s, %s, %s, %s, %s) RETURNING id",
-            (t.titulo, t.descripcion, t.prioridad, t.activo_id, t.usuario_id)
+            "INSERT INTO tickets (titulo, descripcion, prioridad, activo_id, creador_id, fecha_limite) VALUES (%s, %s, %s, %s, %s, %s) RETURNING id",
+            (t.titulo, t.descripcion, t.prioridad, t.activo_id, t.usuario_id, limite)
         )
         new_id = cur.fetchone()['id']
         cur.execute("INSERT INTO mensajes (ticket_id, autor_nombre, contenido, tipo) VALUES (%s, 'Sistema', %s, 'evento')", 
-                   (new_id, f'Ticket creado con prioridad {t.prioridad}'))
+                   (new_id, f'Ticket creado. Resolución esperada antes de: {limite.strftime("%d/%m %H:%M")}'))
         conn.commit()
-        
-        # Notificar Admin (Simulado)
-        background_tasks.add_task(enviar_notificacion, "admin@ng.com", f"Nuevo Ticket #{new_id}", f"Asunto: {t.titulo}")
-        
+        background_tasks.add_task(enviar_notificacion, "admin@ng.com", f"Nuevo Ticket #{new_id}", f"Prioridad: {t.prioridad}")
         return {"id": new_id}
     except Exception as e:
         conn.rollback()
@@ -139,23 +141,14 @@ def create_ticket(t: Ticket, background_tasks: BackgroundTasks):
 def update_status(id: int, st: TicketEstado, background_tasks: BackgroundTasks):
     conn = get_db_connection()
     cur = conn.cursor()
-    cur.execute("SELECT nombre, email FROM usuarios WHERE id = %s", (st.usuario_id,))
-    autor = cur.fetchone()
+    cur.execute("SELECT nombre FROM usuarios WHERE id = %s", (st.usuario_id,))
+    autor = cur.fetchone()['nombre']
     
-    cur.execute("UPDATE tickets SET estado = %s WHERE id = %s RETURNING creador_id", (st.estado, id))
-    ticket_data = cur.fetchone()
+    cur.execute("UPDATE tickets SET estado = %s WHERE id = %s", (st.estado, id))
     
-    cur.execute("INSERT INTO mensajes (ticket_id, autor_nombre, contenido, tipo) VALUES (%s, 'Sistema', %s, 'evento')", 
-               (id, f'{autor["nombre"]} cambió el estado a: {st.estado.upper()}'))
+    msg = f'{autor} movió el ticket a: {st.estado.replace("_", " ").upper()}'
+    cur.execute("INSERT INTO mensajes (ticket_id, autor_nombre, contenido, tipo) VALUES (%s, 'Sistema', %s, 'evento')", (id, msg))
     conn.commit()
-    
-    # Notificar al dueño del ticket
-    if ticket_data:
-        cur.execute("SELECT email FROM usuarios WHERE id = %s", (ticket_data['creador_id'],))
-        dueno = cur.fetchone()
-        if dueno:
-             background_tasks.add_task(enviar_notificacion, dueno['email'], f"Actualización Ticket #{id}", f"Estado: {st.estado}")
-
     conn.close()
     return {"msg": "OK"}
 
@@ -167,6 +160,7 @@ def delete_ticket(id: int):
     conn.close()
     return {"msg": "Borrado"}
 
+# ... (MANTENER IGUAL EL RESTO: ACTIVOS, EXPORTAR Y MENSAJES) ...
 @app.get("/api/activos")
 def get_activos():
     conn = get_db_connection()
@@ -198,14 +192,13 @@ def delete_activo(id: int):
 @app.get("/api/export")
 def export_tickets():
     conn = get_db_connection()
-    df = pd.read_sql("SELECT t.id, t.titulo, t.prioridad, t.estado, u.nombre as creador FROM tickets t JOIN usuarios u ON t.creador_id = u.id", conn)
+    df = pd.read_sql("SELECT t.id, t.titulo, t.prioridad, t.estado, t.fecha_limite, u.nombre as creador FROM tickets t JOIN usuarios u ON t.creador_id = u.id", conn)
     conn.close()
     output = BytesIO()
     with pd.ExcelWriter(output, engine='openpyxl') as writer: df.to_excel(writer, index=False)
     output.seek(0)
     return StreamingResponse(output, headers={"Content-Disposition": "attachment; filename=reporte.xlsx"}, media_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
 
-# CHAT
 @app.get("/api/tickets/{id}/mensajes")
 def get_msgs(id: int):
     conn = get_db_connection()
