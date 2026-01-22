@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Northgate Workspace V9.1</title>
+    <title>Northgate Workspace V10</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -17,6 +17,7 @@
         body {
             font-family: 'Inter', sans-serif;
             background-color: var(--bs-body-bg);
+            transition: 0.3s;
         }
 
         .navbar-custom {
@@ -43,12 +44,19 @@
             font-weight: bold;
         }
 
-        /* KANBAN */
+        /* KANBAN MEJORADO (DRAG & DROP) */
         .kanban-col {
             background: #f0f2f5;
             border-radius: 10px;
             padding: 15px;
-            min-height: 400px;
+            min-height: 500px;
+            border: 2px dashed transparent;
+            transition: 0.2s;
+        }
+
+        .kanban-col.drag-over {
+            border-color: #0d6efd;
+            background: #e9ecef;
         }
 
         .kanban-card {
@@ -57,14 +65,14 @@
             padding: 15px;
             margin-bottom: 15px;
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
-            cursor: pointer;
+            cursor: grab;
             transition: 0.2s;
             border-left: 4px solid transparent;
         }
 
-        .kanban-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        .kanban-card:active {
+            cursor: grabbing;
+            transform: scale(0.98);
         }
 
         .kanban-card.prio-alta {
@@ -118,7 +126,7 @@
 
         .msg.me {
             align-self: flex-end;
-            background: #007bff;
+            background: #0d6efd;
             color: white;
             border-bottom-right-radius: 2px;
         }
@@ -173,6 +181,11 @@
             background: #2c3035;
         }
 
+        [data-bs-theme="dark"] .kanban-col.drag-over {
+            background: #3c4045;
+            border-color: #0d6efd;
+        }
+
         [data-bs-theme="dark"] .kanban-card {
             background: #212529;
             color: white;
@@ -218,11 +231,17 @@
     <div class="container-fluid px-4 mt-4">
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h4 class="mb-0 fw-bold text-muted">Dashboard</h4>
-            <div class="d-flex gap-2">
+            <div class="d-flex gap-3 align-items-center">
+                <div class="input-group shadow-sm" style="width: 250px;">
+                    <span class="input-group-text bg-white border-end-0"><i class="fas fa-search text-muted"></i></span>
+                    <input type="text" id="globalSearch" class="form-control border-start-0 ps-0"
+                        placeholder="Buscar ticket...">
+                </div>
+                <div class="vr h-50 my-auto"></div>
                 <a href="/api/export" class="btn btn-success rounded-pill px-3 shadow-sm role-admin-only"><i
                         class="fas fa-file-excel me-2"></i>Excel</a>
                 <button class="btn btn-primary rounded-pill px-4 shadow-sm" onclick="modalNew()"><i
-                        class="fas fa-plus me-2"></i>Crear Ticket</button>
+                        class="fas fa-plus me-2"></i>Crear</button>
             </div>
         </div>
 
@@ -239,7 +258,7 @@
             </div>
             <div class="col-md-3">
                 <div class="stat-card p-3 h-100 bg-danger text-white">
-                    <h3 id="k-urgente">0</h3><small>Urgentes (Alta)</small>
+                    <h3 id="k-urgente">0</h3><small>Urgentes</small>
                 </div>
             </div>
             <div class="col-md-3">
@@ -266,24 +285,24 @@
             <div class="tab-pane fade show active" id="tab-kanban">
                 <div class="row g-3">
                     <div class="col-md-4">
-                        <div class="kanban-col">
-                            <h6 class="text-uppercase text-muted fw-bold mb-3 ms-1"><i
+                        <div class="kanban-col" id="col-abierto" ondrop="drop(event, 'abierto')"
+                            ondragover="allowDrop(event)" ondragleave="leaveDrop(event)">
+                            <h6 class="text-uppercase text-muted fw-bold mb-3 ms-1 pointer-events-none"><i
                                     class="fas fa-inbox me-2"></i>Pendientes</h6>
-                            <div id="col-abierto"></div>
                         </div>
                     </div>
                     <div class="col-md-4">
-                        <div class="kanban-col">
-                            <h6 class="text-uppercase text-primary fw-bold mb-3 ms-1"><i
+                        <div class="kanban-col" id="col-proceso" ondrop="drop(event, 'en_proceso')"
+                            ondragover="allowDrop(event)" ondragleave="leaveDrop(event)">
+                            <h6 class="text-uppercase text-primary fw-bold mb-3 ms-1 pointer-events-none"><i
                                     class="fas fa-cog fa-spin me-2"></i>En Proceso</h6>
-                            <div id="col-proceso"></div>
                         </div>
                     </div>
                     <div class="col-md-4">
-                        <div class="kanban-col">
-                            <h6 class="text-uppercase text-success fw-bold mb-3 ms-1"><i
+                        <div class="kanban-col" id="col-cerrado" ondrop="drop(event, 'cerrado')"
+                            ondragover="allowDrop(event)" ondragleave="leaveDrop(event)">
+                            <h6 class="text-uppercase text-success fw-bold mb-3 ms-1 pointer-events-none"><i
                                     class="fas fa-check-circle me-2"></i>Resueltos</h6>
-                            <div id="col-cerrado"></div>
                         </div>
                     </div>
                 </div>
@@ -396,6 +415,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         const API = window.location.origin + "/api";
+        // IMPORTANTE: Cambiado a sessionStorage para que no se mezclen pestañas
         let USER = JSON.parse(sessionStorage.getItem('ng_user'));
         let CUR_ID = null, CHART = null, POLLING = null;
         if (!USER) window.location.href = '/';
@@ -412,68 +432,147 @@
         }
 
         async function loadAll() {
-            // Cargar datos
-            const [acts, ticks] = await Promise.all([fetch(API + '/activos').then(r => r.json()), fetch(`${API}/tickets?user_id=${USER.id}&rol=${USER.rol}`).then(r => r.json())]);
+            try {
+                // Carga paralela de datos
+                const [acts, ticks] = await Promise.all([
+                    fetch(API + '/activos').then(r => r.json()),
+                    fetch(`${API}/tickets?user_id=${USER.id}&rol=${USER.rol}`).then(r => r.json())
+                ]);
 
-            // Render Activos (Sin error de k-assets)
-            const tbA = document.getElementById('activosTable'), sel = document.getElementById('tact');
-            tbA.innerHTML = ''; sel.innerHTML = '<option value="">Sin Activo</option>';
-            acts.forEach(a => {
-                sel.innerHTML += `<option value="${a.id}">${a.nombre}</option>`;
-                const btnDel = USER.rol === 'admin' ? `<button class="btn btn-link text-danger" onclick="delAct(${a.id})"><i class="fas fa-trash"></i></button>` : '';
-                tbA.innerHTML += `<tr><td class="ps-3 fw-bold">${a.nombre}<br><small class="text-muted">${a.serial}</small></td><td>${a.tipo}</td><td class="text-end pe-3">${btnDel}</td></tr>`;
-            });
-            // ELIMINADA LA LÍNEA QUE CAUSABA EL ERROR (k-assets)
+                // --- ACTIVOS --- (Aquí estaba el ERROR antes, ahora está corregido)
+                const tbA = document.getElementById('activosTable'), sel = document.getElementById('tact');
+                if (tbA && sel) {
+                    tbA.innerHTML = ''; sel.innerHTML = '<option value="">Sin Activo</option>';
+                    acts.forEach(a => {
+                        sel.innerHTML += `<option value="${a.id}">${a.nombre}</option>`;
+                        const btnDel = USER.rol === 'admin' ? `<button class="btn btn-link text-danger" onclick="delAct(${a.id})"><i class="fas fa-trash"></i></button>` : '';
+                        tbA.innerHTML += `<tr><td class="ps-3 fw-bold">${a.nombre}<br><small class="text-muted">${a.serial}</small></td><td>${a.tipo}</td><td class="text-end pe-3">${btnDel}</td></tr>`;
+                    });
+                }
 
-            // Render Tickets
+                // --- TICKETS Y KANBAN ---
+                renderTickets(ticks);
+
+            } catch (err) {
+                console.error("Error cargando datos:", err);
+            }
+        }
+
+        function renderTickets(ticks) {
             const colAbierto = document.getElementById('col-abierto');
             const colProceso = document.getElementById('col-proceso');
             const colCerrado = document.getElementById('col-cerrado');
             const tbT = document.getElementById('ticketTable');
 
-            colAbierto.innerHTML = ''; colProceso.innerHTML = ''; colCerrado.innerHTML = ''; tbT.innerHTML = '';
+            // Limpiar contenedores (mantener headers del kanban)
+            colAbierto.querySelectorAll('.kanban-card').forEach(e => e.remove());
+            colProceso.querySelectorAll('.kanban-card').forEach(e => e.remove());
+            colCerrado.querySelectorAll('.kanban-card').forEach(e => e.remove());
+            tbT.innerHTML = '';
 
             let stats = { open: 0, high: 0, total: ticks.length };
 
             ticks.forEach(t => {
+                // Stats Logic
                 if (t.estado !== 'cerrado') stats.open++;
                 if (t.prioridad === 'alta' && t.estado !== 'cerrado') stats.high++;
 
+                // SLA Logic
                 const deadline = new Date(t.fecha_limite);
                 const now = new Date();
                 const diff = Math.ceil((deadline - now) / (1000 * 60 * 60 * 24));
                 let slaText = diff < 0 ? `<span class="sla-expired"><i class="fas fa-exclamation-triangle"></i> Vencido hace ${Math.abs(diff)} días</span>` : `<span><i class="far fa-clock"></i> Vence en ${diff} días</span>`;
                 if (t.estado === 'cerrado') slaText = '<span class="text-success"><i class="fas fa-check"></i> Resuelto</span>';
 
-                // Tarjeta Kanban
-                const card = `
-                    <div class="kanban-card prio-${t.prioridad}" onclick="openChat(${t.id}, '${t.titulo}', '${t.estado}')">
+                // DRAG & DROP ATRIBUTOS
+                const draggableAttr = (USER.rol !== 'usuario') ? `draggable="true" ondragstart="drag(event)"` : '';
+
+                // KANBAN CARD
+                const cardHTML = `
+                    <div class="kanban-card prio-${t.prioridad}" id="ticket-${t.id}" ${draggableAttr} onclick="openChat(${t.id}, '${t.titulo}', '${t.estado}')">
                         <div class="d-flex justify-content-between"><span class="fw-bold text-dark">#${t.id}</span><small class="text-muted">${t.creador_nombre.split(' ')[0]}</small></div>
-                        <div class="fw-bold mt-1">${t.titulo}</div>
+                        <div class="fw-bold mt-1 card-title-text">${t.titulo}</div>
                         <small class="text-muted d-block text-truncate">${t.activo_nombre || 'Sin activo'}</small>
                         <div class="sla-tag">${slaText}</div>
                     </div>
                 `;
 
-                if (t.estado === 'abierto') colAbierto.innerHTML += card;
-                else if (t.estado === 'en_proceso') colProceso.innerHTML += card;
-                else colCerrado.innerHTML += card;
+                // Inyectar en columna correspondiente (solo tarjetas)
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = cardHTML;
+                const cardElement = tempDiv.firstElementChild;
 
-                // Fila Lista
+                if (t.estado === 'abierto') colAbierto.appendChild(cardElement);
+                else if (t.estado === 'en_proceso') colProceso.appendChild(cardElement);
+                else colCerrado.appendChild(cardElement);
+
+                // LISTA ROW
                 tbT.innerHTML += `<tr><td class="ps-4 fw-bold">#${t.id} ${t.titulo}</td><td>${t.creador_nombre}</td><td>${t.prioridad}</td><td>${t.estado}</td><td class="text-end"><button class="btn btn-sm btn-primary" onclick="openChat(${t.id}, '${t.titulo}', '${t.estado}')">Ver</button></td></tr>`;
             });
 
-            document.getElementById('k-total').innerText = stats.total;
-            document.getElementById('k-open').innerText = stats.open;
-            document.getElementById('k-urgente').innerText = stats.high;
+            // Actualizar KPIs
+            const elTotal = document.getElementById('k-total'); if (elTotal) elTotal.innerText = stats.total;
+            const elOpen = document.getElementById('k-open'); if (elOpen) elOpen.innerText = stats.open;
+            const elUrg = document.getElementById('k-urgente'); if (elUrg) elUrg.innerText = stats.high;
             updateChart(stats.open, stats.total - stats.open);
         }
 
+        // --- DRAG & DROP LOGIC ---
+        function allowDrop(ev) { ev.preventDefault(); ev.currentTarget.classList.add('drag-over'); }
+        function leaveDrop(ev) { ev.currentTarget.classList.remove('drag-over'); }
+        function drag(ev) { ev.dataTransfer.setData("text", ev.target.id); }
+
+        async function drop(ev, newStatus) {
+            ev.preventDefault();
+            ev.currentTarget.classList.remove('drag-over');
+            const ticketIdStr = ev.dataTransfer.getData("text"); // "ticket-123"
+            const ticketId = ticketIdStr.replace('ticket-', '');
+            const card = document.getElementById(ticketIdStr);
+
+            // Mover visualmente
+            ev.currentTarget.appendChild(card);
+
+            // Actualizar Backend
+            try {
+                await fetch(`${API}/tickets/${ticketId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ estado: newStatus, usuario_id: USER.id })
+                });
+
+                // Feedback visual (Toast)
+                const Toast = Swal.mixin({ toast: true, position: 'top-end', showConfirmButton: false, timer: 3000, timerProgressBar: true });
+                Toast.fire({ icon: 'success', title: `Ticket movido a: ${newStatus.replace('_', ' ').toUpperCase()}` });
+
+            } catch (err) {
+                Swal.fire('Error', 'No se pudo actualizar el estado', 'error');
+                loadAll(); // Revertir si falla
+            }
+        }
+
+        // --- BUSCADOR GLOBAL ---
+        document.getElementById('globalSearch').addEventListener('keyup', function (e) {
+            const term = e.target.value.toLowerCase();
+
+            // Filtrar Kanban Cards
+            document.querySelectorAll('.kanban-card').forEach(card => {
+                const text = card.innerText.toLowerCase();
+                card.style.display = text.includes(term) ? 'block' : 'none';
+            });
+
+            // Filtrar Tabla Lista
+            document.querySelectorAll('#ticketTable tr').forEach(row => {
+                const text = row.innerText.toLowerCase();
+                row.style.display = text.includes(term) ? '' : 'none';
+            });
+        });
+
+        // --- FUNCIONES ANTIGUAS (CHAT, ETC) ---
         async function openChat(id, title, status) {
             CUR_ID = id; document.getElementById('cTitle').innerText = title; document.getElementById('cId').innerText = id;
             const actions = document.getElementById('chatActions'); actions.innerHTML = '';
             if (USER.rol !== 'usuario') {
-                if (status === 'abierto') actions.innerHTML = `<button class="btn btn-sm btn-warning text-white" onclick="updSt(${id}, 'en_proceso')">Tomar (En Proceso)</button>`;
+                if (status === 'abierto') actions.innerHTML = `<button class="btn btn-sm btn-warning text-white" onclick="updSt(${id}, 'en_proceso')">Tomar</button>`;
                 if (status === 'en_proceso') actions.innerHTML = `<button class="btn btn-sm btn-success" onclick="updSt(${id}, 'cerrado')">Finalizar</button>`;
                 if (status === 'cerrado') actions.innerHTML = `<button class="btn btn-sm btn-secondary" onclick="updSt(${id}, 'abierto')">Reabrir</button>`;
             }
@@ -481,14 +580,12 @@
             loadMsgs();
             if (POLLING) clearInterval(POLLING); POLLING = setInterval(loadMsgs, 3000);
         }
-
-        document.getElementById('chatModal').addEventListener('hidden.bs.modal', () => { if (POLLING) clearInterval(POLLING); CUR_ID = null; });
+        document.getElementById('chatModal').addEventListener('hidden.bs.modal', () => { if (POLLING) clearInterval(POLLING); CUR_ID = null; loadAll(); }); // Recarga al cerrar chat para actualizar estados
 
         async function loadMsgs() { if (!CUR_ID) return; const msgs = await fetch(`${API}/tickets/${CUR_ID}/mensajes`).then(r => r.json()); const box = document.getElementById('chatBox'); if (box.childElementCount !== msgs.length) { box.innerHTML = ''; msgs.forEach(m => { if (m.tipo === 'evento') box.innerHTML += `<div class="msg system">${m.contenido}</div>`; else { const isMe = m.autor_id === USER.id; let c = m.contenido; if (m.tipo === 'imagen') c = `<img src="${m.contenido}" class="chat-img" onclick="window.open(this.src)">`; else if (m.tipo === 'archivo') c = `<a href="${m.contenido}" download class="chat-file"><i class="fas fa-file"></i> Archivo</a>`; box.innerHTML += `<div class="msg ${isMe ? 'me' : 'other'}"><strong>${m.autor_nombre}</strong><br>${c}</div>`; } }); box.scrollTop = box.scrollHeight; } }
         document.getElementById('chatForm').addEventListener('submit', (e) => { e.preventDefault(); const t = document.getElementById('cInput').value; if (t) sendMsg(t, 'texto'); });
         async function sendMsg(c, t) { await fetch(`${API}/tickets/${CUR_ID}/mensajes`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ usuario_id: USER.id, contenido: c, tipo: t }) }); document.getElementById('cInput').value = ''; loadMsgs(); }
         function uploadFile(i) { const f = i.files[0]; if (!f) return; const r = new FileReader(); r.onload = e => { const res = e.target.result; if (f.type.startsWith('image/')) { const im = new Image(); im.src = res; im.onload = () => { const c = document.createElement('canvas'), ctx = c.getContext('2d'), sc = 800 / im.width; c.width = 800; c.height = im.height * sc; ctx.drawImage(im, 0, 0, c.width, c.height); sendMsg(c.toDataURL('image/jpeg', 0.7), 'imagen'); } } else sendMsg(res, 'archivo'); }; r.readAsDataURL(f); i.value = ''; }
-
         async function updSt(id, st) { await fetch(`${API}/tickets/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ estado: st, usuario_id: USER.id }) }); bootstrap.Modal.getInstance(document.getElementById('chatModal')).hide(); loadAll(); }
         async function delTick(id) { if (confirm('¿Borrar?')) { await fetch(`${API}/tickets/${id}`, { method: 'DELETE' }); loadAll(); } }
         async function delAct(id) { const r = await fetch(`${API}/activos/${id}`, { method: 'DELETE' }); if (r.ok) loadAll(); else Swal.fire('Error', 'En uso', 'error'); }
