@@ -98,7 +98,7 @@
 
                 if (res.ok) {
                     const user = await res.json();
-                    localStorage.setItem('ng_user', JSON.stringify(user)); // Guardamos sesión
+                    sessionStorage.setItem('ng_user', JSON.stringify(user)); // Guardamos sesión
                     window.location.href = '/app';
                 } else {
                     Swal.fire('Error', 'Credenciales inválidas', 'error');

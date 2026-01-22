@@ -396,7 +396,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         const API = window.location.origin + "/api";
-        let USER = JSON.parse(localStorage.getItem('ng_user'));
+        let USER = JSON.parse(sessionStorage.getItem('ng_user'));
         let CUR_ID = null, CHART = null, POLLING = null;
         if (!USER) window.location.href = '/';
 
@@ -494,7 +494,7 @@
         async function delAct(id) { const r = await fetch(`${API}/activos/${id}`, { method: 'DELETE' }); if (r.ok) loadAll(); else Swal.fire('Error', 'En uso', 'error'); }
         document.getElementById('ticketForm').addEventListener('submit', async (e) => { e.preventDefault(); await fetch(API + '/tickets', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ titulo: document.getElementById('ttit').value, descripcion: document.getElementById('tdesc').value, prioridad: document.getElementById('tprio').value, activo_id: document.getElementById('tact').value || null, usuario_id: USER.id }) }); bootstrap.Modal.getInstance(document.getElementById('newTicketModal')).hide(); e.target.reset(); loadAll(); });
         document.getElementById('activoForm').addEventListener('submit', async (e) => { e.preventDefault(); await fetch(API + '/activos', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ nombre: document.getElementById('aname').value, tipo: document.getElementById('atype').value, serial: document.getElementById('aserial').value }) }); e.target.reset(); loadAll(); });
-        function logout() { localStorage.removeItem('ng_user'); window.location.href = '/'; }
+        function logout() { sessionStorage.removeItem('ng_user'); window.location.href = '/'; }
         function modalNew() { new bootstrap.Modal(document.getElementById('newTicketModal')).show(); }
         function toggleTheme() { const h = document.documentElement; h.setAttribute('data-bs-theme', h.getAttribute('data-bs-theme') === 'dark' ? 'light' : 'dark'); }
         function initChart() { const ctx = document.getElementById('statusChart').getContext('2d'); CHART = new Chart(ctx, { type: 'doughnut', data: { labels: ['Abierto', 'Cerrado'], datasets: [{ data: [0, 0], backgroundColor: ['#ffc107', '#198754'], borderWidth: 0 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, cutout: '75%' } }); }
