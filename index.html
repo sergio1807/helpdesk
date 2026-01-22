@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Northgate Workspace V10</title>
+    <title>Northgate Workspace V10.1</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -42,6 +42,34 @@
             align-items: center;
             justify-content: center;
             font-weight: bold;
+        }
+
+        /* CORRECCIÓN DE PESTAÑAS (TABS) */
+        .nav-tabs {
+            border-bottom: 2px solid rgba(0, 0, 0, 0.1);
+        }
+
+        .nav-tabs .nav-link {
+            border: none;
+            color: #6c757d;
+            /* Gris cuando inactivo */
+            font-weight: 600;
+            background: transparent;
+            border-bottom: 3px solid transparent;
+            /* Línea invisible por defecto */
+            transition: all 0.2s;
+        }
+
+        .nav-tabs .nav-link:hover {
+            color: #2a5298;
+        }
+
+        .nav-tabs .nav-link.active {
+            color: #0d6efd !important;
+            /* Azul cuando activo */
+            border-bottom: 3px solid #0d6efd !important;
+            /* Línea azul visible */
+            background: transparent;
         }
 
         /* KANBAN MEJORADO (DRAG & DROP) */
@@ -201,6 +229,19 @@
             border-color: #444;
         }
 
+        [data-bs-theme="dark"] .nav-tabs {
+            border-color: #444;
+        }
+
+        [data-bs-theme="dark"] .nav-tabs .nav-link {
+            color: #aaa;
+        }
+
+        [data-bs-theme="dark"] .nav-tabs .nav-link.active {
+            color: #0d6efd !important;
+            border-color: #0d6efd !important;
+        }
+
         [data-bs-theme="dark"] input,
         [data-bs-theme="dark"] select,
         [data-bs-theme="dark"] textarea {
@@ -270,15 +311,18 @@
         </div>
 
         <ul class="nav nav-tabs border-0 mb-3" role="tablist">
-            <li class="nav-item"><button
-                    class="nav-link active border-0 bg-transparent fw-bold border-bottom border-primary border-3"
-                    data-bs-toggle="tab" data-bs-target="#tab-kanban"><i class="fas fa-columns me-2"></i>Tablero
-                    Kanban</button></li>
-            <li class="nav-item"><button class="nav-link border-0 bg-transparent fw-bold text-muted"
-                    data-bs-toggle="tab" data-bs-target="#tab-list"><i class="fas fa-list me-2"></i>Lista</button></li>
-            <li class="nav-item role-staff-only"><button class="nav-link border-0 bg-transparent fw-bold text-muted"
-                    data-bs-toggle="tab" data-bs-target="#tab-activos"><i
-                        class="fas fa-server me-2"></i>Activos</button></li>
+            <li class="nav-item">
+                <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-kanban"><i
+                        class="fas fa-columns me-2"></i>Tablero Kanban</button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-list"><i
+                        class="fas fa-list me-2"></i>Lista</button>
+            </li>
+            <li class="nav-item role-staff-only">
+                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-activos"><i
+                        class="fas fa-server me-2"></i>Activos</button>
+            </li>
         </ul>
 
         <div class="tab-content">
@@ -415,7 +459,6 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         const API = window.location.origin + "/api";
-        // IMPORTANTE: Cambiado a sessionStorage para que no se mezclen pestañas
         let USER = JSON.parse(sessionStorage.getItem('ng_user'));
         let CUR_ID = null, CHART = null, POLLING = null;
         if (!USER) window.location.href = '/';
@@ -433,13 +476,8 @@
 
         async function loadAll() {
             try {
-                // Carga paralela de datos
-                const [acts, ticks] = await Promise.all([
-                    fetch(API + '/activos').then(r => r.json()),
-                    fetch(`${API}/tickets?user_id=${USER.id}&rol=${USER.rol}`).then(r => r.json())
-                ]);
+                const [acts, ticks] = await Promise.all([fetch(API + '/activos').then(r => r.json()), fetch(`${API}/tickets?user_id=${USER.id}&rol=${USER.rol}`).then(r => r.json())]);
 
-                // --- ACTIVOS --- (Aquí estaba el ERROR antes, ahora está corregido)
                 const tbA = document.getElementById('activosTable'), sel = document.getElementById('tact');
                 if (tbA && sel) {
                     tbA.innerHTML = ''; sel.innerHTML = '<option value="">Sin Activo</option>';
@@ -450,12 +488,9 @@
                     });
                 }
 
-                // --- TICKETS Y KANBAN ---
                 renderTickets(ticks);
 
-            } catch (err) {
-                console.error("Error cargando datos:", err);
-            }
+            } catch (err) { console.error("Error cargando datos:", err); }
         }
 
         function renderTickets(ticks) {
@@ -464,110 +499,70 @@
             const colCerrado = document.getElementById('col-cerrado');
             const tbT = document.getElementById('ticketTable');
 
-            // Limpiar contenedores (mantener headers del kanban)
-            colAbierto.querySelectorAll('.kanban-card').forEach(e => e.remove());
-            colProceso.querySelectorAll('.kanban-card').forEach(e => e.remove());
-            colCerrado.querySelectorAll('.kanban-card').forEach(e => e.remove());
+            // Limpiar
+            [colAbierto, colProceso, colCerrado].forEach(col => {
+                Array.from(col.children).forEach(child => { if (child.tagName === 'DIV') child.remove(); });
+            });
             tbT.innerHTML = '';
 
             let stats = { open: 0, high: 0, total: ticks.length };
 
             ticks.forEach(t => {
-                // Stats Logic
                 if (t.estado !== 'cerrado') stats.open++;
                 if (t.prioridad === 'alta' && t.estado !== 'cerrado') stats.high++;
 
-                // SLA Logic
                 const deadline = new Date(t.fecha_limite);
-                const now = new Date();
-                const diff = Math.ceil((deadline - now) / (1000 * 60 * 60 * 24));
+                const diff = Math.ceil((deadline - new Date()) / (1000 * 60 * 60 * 24));
                 let slaText = diff < 0 ? `<span class="sla-expired"><i class="fas fa-exclamation-triangle"></i> Vencido hace ${Math.abs(diff)} días</span>` : `<span><i class="far fa-clock"></i> Vence en ${diff} días</span>`;
                 if (t.estado === 'cerrado') slaText = '<span class="text-success"><i class="fas fa-check"></i> Resuelto</span>';
-
-                // DRAG & DROP ATRIBUTOS
                 const draggableAttr = (USER.rol !== 'usuario') ? `draggable="true" ondragstart="drag(event)"` : '';
 
-                // KANBAN CARD
+                // KANBAN
                 const cardHTML = `
                     <div class="kanban-card prio-${t.prioridad}" id="ticket-${t.id}" ${draggableAttr} onclick="openChat(${t.id}, '${t.titulo}', '${t.estado}')">
                         <div class="d-flex justify-content-between"><span class="fw-bold text-dark">#${t.id}</span><small class="text-muted">${t.creador_nombre.split(' ')[0]}</small></div>
-                        <div class="fw-bold mt-1 card-title-text">${t.titulo}</div>
+                        <div class="fw-bold mt-1">${t.titulo}</div>
                         <small class="text-muted d-block text-truncate">${t.activo_nombre || 'Sin activo'}</small>
                         <div class="sla-tag">${slaText}</div>
-                    </div>
-                `;
+                    </div>`;
+                const tempDiv = document.createElement('div'); tempDiv.innerHTML = cardHTML;
+                if (t.estado === 'abierto') colAbierto.appendChild(tempDiv.firstElementChild);
+                else if (t.estado === 'en_proceso') colProceso.appendChild(tempDiv.firstElementChild);
+                else colCerrado.appendChild(tempDiv.firstElementChild);
 
-                // Inyectar en columna correspondiente (solo tarjetas)
-                const tempDiv = document.createElement('div');
-                tempDiv.innerHTML = cardHTML;
-                const cardElement = tempDiv.firstElementChild;
-
-                if (t.estado === 'abierto') colAbierto.appendChild(cardElement);
-                else if (t.estado === 'en_proceso') colProceso.appendChild(cardElement);
-                else colCerrado.appendChild(cardElement);
-
-                // LISTA ROW
+                // LISTA
                 tbT.innerHTML += `<tr><td class="ps-4 fw-bold">#${t.id} ${t.titulo}</td><td>${t.creador_nombre}</td><td>${t.prioridad}</td><td>${t.estado}</td><td class="text-end"><button class="btn btn-sm btn-primary" onclick="openChat(${t.id}, '${t.titulo}', '${t.estado}')">Ver</button></td></tr>`;
             });
 
-            // Actualizar KPIs
             const elTotal = document.getElementById('k-total'); if (elTotal) elTotal.innerText = stats.total;
             const elOpen = document.getElementById('k-open'); if (elOpen) elOpen.innerText = stats.open;
             const elUrg = document.getElementById('k-urgente'); if (elUrg) elUrg.innerText = stats.high;
             updateChart(stats.open, stats.total - stats.open);
         }
 
-        // --- DRAG & DROP LOGIC ---
+        // DRAG & DROP
         function allowDrop(ev) { ev.preventDefault(); ev.currentTarget.classList.add('drag-over'); }
         function leaveDrop(ev) { ev.currentTarget.classList.remove('drag-over'); }
         function drag(ev) { ev.dataTransfer.setData("text", ev.target.id); }
-
         async function drop(ev, newStatus) {
-            ev.preventDefault();
-            ev.currentTarget.classList.remove('drag-over');
-            const ticketIdStr = ev.dataTransfer.getData("text"); // "ticket-123"
+            ev.preventDefault(); ev.currentTarget.classList.remove('drag-over');
+            const ticketIdStr = ev.dataTransfer.getData("text");
             const ticketId = ticketIdStr.replace('ticket-', '');
             const card = document.getElementById(ticketIdStr);
-
-            // Mover visualmente
             ev.currentTarget.appendChild(card);
-
-            // Actualizar Backend
             try {
-                await fetch(`${API}/tickets/${ticketId}`, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ estado: newStatus, usuario_id: USER.id })
-                });
-
-                // Feedback visual (Toast)
+                await fetch(`${API}/tickets/${ticketId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ estado: newStatus, usuario_id: USER.id }) });
                 const Toast = Swal.mixin({ toast: true, position: 'top-end', showConfirmButton: false, timer: 3000, timerProgressBar: true });
                 Toast.fire({ icon: 'success', title: `Ticket movido a: ${newStatus.replace('_', ' ').toUpperCase()}` });
-
-            } catch (err) {
-                Swal.fire('Error', 'No se pudo actualizar el estado', 'error');
-                loadAll(); // Revertir si falla
-            }
+            } catch (err) { Swal.fire('Error', 'Fallo al actualizar', 'error'); loadAll(); }
         }
 
-        // --- BUSCADOR GLOBAL ---
         document.getElementById('globalSearch').addEventListener('keyup', function (e) {
             const term = e.target.value.toLowerCase();
-
-            // Filtrar Kanban Cards
-            document.querySelectorAll('.kanban-card').forEach(card => {
-                const text = card.innerText.toLowerCase();
-                card.style.display = text.includes(term) ? 'block' : 'none';
-            });
-
-            // Filtrar Tabla Lista
-            document.querySelectorAll('#ticketTable tr').forEach(row => {
-                const text = row.innerText.toLowerCase();
-                row.style.display = text.includes(term) ? '' : 'none';
-            });
+            document.querySelectorAll('.kanban-card').forEach(card => card.style.display = card.innerText.toLowerCase().includes(term) ? 'block' : 'none');
+            document.querySelectorAll('#ticketTable tr').forEach(row => row.style.display = row.innerText.toLowerCase().includes(term) ? '' : 'none');
         });
 
-        // --- FUNCIONES ANTIGUAS (CHAT, ETC) ---
         async function openChat(id, title, status) {
             CUR_ID = id; document.getElementById('cTitle').innerText = title; document.getElementById('cId').innerText = id;
             const actions = document.getElementById('chatActions'); actions.innerHTML = '';
@@ -577,10 +572,9 @@
                 if (status === 'cerrado') actions.innerHTML = `<button class="btn btn-sm btn-secondary" onclick="updSt(${id}, 'abierto')">Reabrir</button>`;
             }
             new bootstrap.Modal(document.getElementById('chatModal')).show();
-            loadMsgs();
-            if (POLLING) clearInterval(POLLING); POLLING = setInterval(loadMsgs, 3000);
+            loadMsgs(); if (POLLING) clearInterval(POLLING); POLLING = setInterval(loadMsgs, 3000);
         }
-        document.getElementById('chatModal').addEventListener('hidden.bs.modal', () => { if (POLLING) clearInterval(POLLING); CUR_ID = null; loadAll(); }); // Recarga al cerrar chat para actualizar estados
+        document.getElementById('chatModal').addEventListener('hidden.bs.modal', () => { if (POLLING) clearInterval(POLLING); CUR_ID = null; loadAll(); });
 
         async function loadMsgs() { if (!CUR_ID) return; const msgs = await fetch(`${API}/tickets/${CUR_ID}/mensajes`).then(r => r.json()); const box = document.getElementById('chatBox'); if (box.childElementCount !== msgs.length) { box.innerHTML = ''; msgs.forEach(m => { if (m.tipo === 'evento') box.innerHTML += `<div class="msg system">${m.contenido}</div>`; else { const isMe = m.autor_id === USER.id; let c = m.contenido; if (m.tipo === 'imagen') c = `<img src="${m.contenido}" class="chat-img" onclick="window.open(this.src)">`; else if (m.tipo === 'archivo') c = `<a href="${m.contenido}" download class="chat-file"><i class="fas fa-file"></i> Archivo</a>`; box.innerHTML += `<div class="msg ${isMe ? 'me' : 'other'}"><strong>${m.autor_nombre}</strong><br>${c}</div>`; } }); box.scrollTop = box.scrollHeight; } }
         document.getElementById('chatForm').addEventListener('submit', (e) => { e.preventDefault(); const t = document.getElementById('cInput').value; if (t) sendMsg(t, 'texto'); });
