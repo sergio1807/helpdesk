@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Northgate Workspace V10.1</title>
+    <title>Northgate Workspace V11</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -44,7 +44,7 @@
             font-weight: bold;
         }
 
-        /* CORRECCIÓN DE PESTAÑAS (TABS) */
+        /* TABS */
         .nav-tabs {
             border-bottom: 2px solid rgba(0, 0, 0, 0.1);
         }
@@ -52,11 +52,9 @@
         .nav-tabs .nav-link {
             border: none;
             color: #6c757d;
-            /* Gris cuando inactivo */
             font-weight: 600;
             background: transparent;
             border-bottom: 3px solid transparent;
-            /* Línea invisible por defecto */
             transition: all 0.2s;
         }
 
@@ -66,13 +64,11 @@
 
         .nav-tabs .nav-link.active {
             color: #0d6efd !important;
-            /* Azul cuando activo */
             border-bottom: 3px solid #0d6efd !important;
-            /* Línea azul visible */
             background: transparent;
         }
 
-        /* KANBAN MEJORADO (DRAG & DROP) */
+        /* KANBAN */
         .kanban-col {
             background: #f0f2f5;
             border-radius: 10px;
@@ -125,6 +121,36 @@
 
         .sla-expired {
             color: #dc3545;
+        }
+
+        /* FAQs */
+        .faq-card {
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            margin-bottom: 10px;
+            transition: 0.2s;
+        }
+
+        .faq-card:hover {
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            border-color: #0d6efd;
+        }
+
+        .faq-header {
+            padding: 15px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .faq-body {
+            padding: 15px;
+            border-top: 1px solid rgba(0, 0, 0, 0.05);
+            display: none;
+            background: #f8f9fa;
+            border-bottom-left-radius: 8px;
+            border-bottom-right-radius: 8px;
         }
 
         /* CHAT */
@@ -198,6 +224,19 @@
             border: 1px solid rgba(0, 0, 0, 0.1);
         }
 
+        /* RATING STARS */
+        .rating-stars {
+            color: #ddd;
+            cursor: pointer;
+            font-size: 1.5rem;
+            transition: 0.2s;
+        }
+
+        .rating-stars:hover,
+        .rating-stars.active {
+            color: #ffc107;
+        }
+
         /* DARK MODE */
         [data-bs-theme="dark"] .bg-white,
         [data-bs-theme="dark"] .bg-light {
@@ -214,9 +253,14 @@
             border-color: #0d6efd;
         }
 
-        [data-bs-theme="dark"] .kanban-card {
+        [data-bs-theme="dark"] .kanban-card,
+        [data-bs-theme="dark"] .faq-card {
             background: #212529;
             color: white;
+        }
+
+        [data-bs-theme="dark"] .faq-body {
+            background: #2c2c2c;
         }
 
         [data-bs-theme="dark"] .chat-box {
@@ -253,6 +297,7 @@
 </head>
 
 <body>
+    <audio id="notifSound" src="data:audio/wav;base64,UklGRl9vT1..."></audio>
     <nav class="navbar navbar-expand-lg navbar-dark navbar-custom py-2">
         <div class="container-fluid px-4">
             <a class="navbar-brand fw-bold" href="#"><i class="fas fa-layer-group me-2"></i>Northgate <span
@@ -271,12 +316,12 @@
 
     <div class="container-fluid px-4 mt-4">
         <div class="d-flex justify-content-between align-items-center mb-4">
-            <h4 class="mb-0 fw-bold text-muted">Dashboard</h4>
+            <h4 class="mb-0 fw-bold text-muted">Service Portal</h4>
             <div class="d-flex gap-3 align-items-center">
                 <div class="input-group shadow-sm" style="width: 250px;">
                     <span class="input-group-text bg-white border-end-0"><i class="fas fa-search text-muted"></i></span>
                     <input type="text" id="globalSearch" class="form-control border-start-0 ps-0"
-                        placeholder="Buscar ticket...">
+                        placeholder="Buscar...">
                 </div>
                 <div class="vr h-50 my-auto"></div>
                 <a href="/api/export" class="btn btn-success rounded-pill px-3 shadow-sm role-admin-only"><i
@@ -311,18 +356,14 @@
         </div>
 
         <ul class="nav nav-tabs border-0 mb-3" role="tablist">
-            <li class="nav-item">
-                <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-kanban"><i
-                        class="fas fa-columns me-2"></i>Tablero Kanban</button>
-            </li>
-            <li class="nav-item">
-                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-list"><i
-                        class="fas fa-list me-2"></i>Lista</button>
-            </li>
-            <li class="nav-item role-staff-only">
-                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-activos"><i
-                        class="fas fa-server me-2"></i>Activos</button>
-            </li>
+            <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-kanban"><i
+                        class="fas fa-columns me-2"></i>Tablero Kanban</button></li>
+            <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-list"><i
+                        class="fas fa-list me-2"></i>Lista</button></li>
+            <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-faqs"><i
+                        class="fas fa-book me-2"></i>Base Conocimiento</button></li>
+            <li class="nav-item role-staff-only"><button class="nav-link" data-bs-toggle="tab"
+                    data-bs-target="#tab-activos"><i class="fas fa-server me-2"></i>Activos</button></li>
         </ul>
 
         <div class="tab-content">
@@ -369,6 +410,33 @@
                 </div>
             </div>
 
+            <div class="tab-pane fade" id="tab-faqs">
+                <div class="row">
+                    <div class="col-md-4 role-admin-only">
+                        <div class="card border-0 shadow-sm p-3 mb-3">
+                            <h6>Nueva FAQ</h6>
+                            <form id="faqForm">
+                                <input type="text" id="ftit" class="form-control mb-2" placeholder="Pregunta / Título"
+                                    required>
+                                <select id="fcat" class="form-select mb-2">
+                                    <option>General</option>
+                                    <option>Hardware</option>
+                                    <option>Software</option>
+                                    <option>Redes</option>
+                                </select>
+                                <textarea id="fcont" class="form-control mb-2" rows="3" placeholder="Respuesta..."
+                                    required></textarea>
+                                <button type="submit" class="btn btn-sm btn-primary w-100">Publicar Artículo</button>
+                            </form>
+                        </div>
+                    </div>
+                    <div class="col-md-8">
+                        <h5 class="mb-3 fw-light">Artículos de Ayuda</h5>
+                        <div id="faqContainer"></div>
+                    </div>
+                </div>
+            </div>
+
             <div class="tab-pane fade" id="tab-activos">
                 <div class="row">
                     <div class="col-md-4">
@@ -405,7 +473,7 @@
 
     <div class="modal fade" id="chatModal" tabindex="-1">
         <div class="modal-dialog modal-lg">
-            <div class="modal-content border-0 shadow-lg" style="height: 600px;">
+            <div class="modal-content border-0 shadow-lg" style="height: 650px;">
                 <div class="modal-header bg-light border-0">
                     <div>
                         <h6 class="mb-0 fw-bold" id="cTitle">Chat</h6><small class="text-muted">Ticket #<span
@@ -415,6 +483,10 @@
                         class="btn-close ms-2" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body p-0 d-flex flex-column">
+                    <div id="ratingPanel" class="bg-warning-subtle p-3 text-center" style="display:none;"><strong>¿Qué
+                            tal el servicio?</strong><br>
+                        <div id="starsContainer" class="mt-1"></div>
+                    </div>
                     <div id="chatBox" class="chat-box"></div>
                     <div class="p-3 bg-white border-top">
                         <form id="chatForm" class="d-flex gap-2"><input type="file" id="fInput" hidden
@@ -430,6 +502,7 @@
             </div>
         </div>
     </div>
+
     <div class="modal fade" id="newTicketModal" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content border-0 shadow">
@@ -460,7 +533,7 @@
     <script>
         const API = window.location.origin + "/api";
         let USER = JSON.parse(sessionStorage.getItem('ng_user'));
-        let CUR_ID = null, CHART = null, POLLING = null;
+        let CUR_ID = null, CHART = null, POLLING = null, CUR_STATUS = 'abierto';
         if (!USER) window.location.href = '/';
 
         document.addEventListener('DOMContentLoaded', () => { setupUI(); loadAll(); });
@@ -476,8 +549,13 @@
 
         async function loadAll() {
             try {
-                const [acts, ticks] = await Promise.all([fetch(API + '/activos').then(r => r.json()), fetch(`${API}/tickets?user_id=${USER.id}&rol=${USER.rol}`).then(r => r.json())]);
+                const [acts, ticks, faqs] = await Promise.all([
+                    fetch(API + '/activos').then(r => r.json()),
+                    fetch(`${API}/tickets?user_id=${USER.id}&rol=${USER.rol}`).then(r => r.json()),
+                    fetch(API + '/faqs').then(r => r.json())
+                ]);
 
+                // Activos
                 const tbA = document.getElementById('activosTable'), sel = document.getElementById('tact');
                 if (tbA && sel) {
                     tbA.innerHTML = ''; sel.innerHTML = '<option value="">Sin Activo</option>';
@@ -488,21 +566,28 @@
                     });
                 }
 
-                renderTickets(ticks);
+                // FAQs
+                const faqCon = document.getElementById('faqContainer');
+                faqCon.innerHTML = '';
+                faqs.forEach(f => {
+                    const btnDel = USER.rol === 'admin' ? `<button class="btn btn-sm btn-outline-danger ms-auto" onclick="delFaq(${f.id})"><i class="fas fa-trash"></i></button>` : '';
+                    faqCon.innerHTML += `
+                        <div class="faq-card">
+                            <div class="faq-header" onclick="this.nextElementSibling.style.display = this.nextElementSibling.style.display==='block'?'none':'block'">
+                                <div><span class="badge bg-secondary me-2">${f.categoria}</span> <strong>${f.titulo}</strong></div>
+                                ${btnDel}
+                            </div>
+                            <div class="faq-body">${f.contenido.replace(/\n/g, '<br>')}</div>
+                        </div>`;
+                });
 
-            } catch (err) { console.error("Error cargando datos:", err); }
+                renderTickets(ticks);
+            } catch (err) { console.error(err); }
         }
 
         function renderTickets(ticks) {
-            const colAbierto = document.getElementById('col-abierto');
-            const colProceso = document.getElementById('col-proceso');
-            const colCerrado = document.getElementById('col-cerrado');
-            const tbT = document.getElementById('ticketTable');
-
-            // Limpiar
-            [colAbierto, colProceso, colCerrado].forEach(col => {
-                Array.from(col.children).forEach(child => { if (child.tagName === 'DIV') child.remove(); });
-            });
+            const colAbierto = document.getElementById('col-abierto'), colProceso = document.getElementById('col-proceso'), colCerrado = document.getElementById('col-cerrado'), tbT = document.getElementById('ticketTable');
+            [colAbierto, colProceso, colCerrado].forEach(col => { Array.from(col.children).forEach(child => { if (child.tagName === 'DIV') child.remove(); }); });
             tbT.innerHTML = '';
 
             let stats = { open: 0, high: 0, total: ticks.length };
@@ -515,23 +600,19 @@
                 const diff = Math.ceil((deadline - new Date()) / (1000 * 60 * 60 * 24));
                 let slaText = diff < 0 ? `<span class="sla-expired"><i class="fas fa-exclamation-triangle"></i> Vencido hace ${Math.abs(diff)} días</span>` : `<span><i class="far fa-clock"></i> Vence en ${diff} días</span>`;
                 if (t.estado === 'cerrado') slaText = '<span class="text-success"><i class="fas fa-check"></i> Resuelto</span>';
-                const draggableAttr = (USER.rol !== 'usuario') ? `draggable="true" ondragstart="drag(event)"` : '';
 
-                // KANBAN
-                const cardHTML = `
-                    <div class="kanban-card prio-${t.prioridad}" id="ticket-${t.id}" ${draggableAttr} onclick="openChat(${t.id}, '${t.titulo}', '${t.estado}')">
-                        <div class="d-flex justify-content-between"><span class="fw-bold text-dark">#${t.id}</span><small class="text-muted">${t.creador_nombre.split(' ')[0]}</small></div>
-                        <div class="fw-bold mt-1">${t.titulo}</div>
-                        <small class="text-muted d-block text-truncate">${t.activo_nombre || 'Sin activo'}</small>
-                        <div class="sla-tag">${slaText}</div>
-                    </div>`;
+                // Rating stars in list
+                let rating = '';
+                if (t.estado === 'cerrado' && t.valoracion > 0) rating = `<span class="text-warning ms-1">${'★'.repeat(t.valoracion)}</span>`;
+
+                const draggableAttr = (USER.rol !== 'usuario') ? `draggable="true" ondragstart="drag(event)"` : '';
+                const cardHTML = `<div class="kanban-card prio-${t.prioridad}" id="ticket-${t.id}" ${draggableAttr} onclick="openChat(${t.id}, '${t.titulo}', '${t.estado}', ${t.valoracion})"><div class="d-flex justify-content-between"><span class="fw-bold text-dark">#${t.id}</span><small class="text-muted">${t.creador_nombre.split(' ')[0]}</small></div><div class="fw-bold mt-1 card-title-text">${t.titulo}${rating}</div><small class="text-muted d-block text-truncate">${t.activo_nombre || 'Sin activo'}</small><div class="sla-tag">${slaText}</div></div>`;
                 const tempDiv = document.createElement('div'); tempDiv.innerHTML = cardHTML;
                 if (t.estado === 'abierto') colAbierto.appendChild(tempDiv.firstElementChild);
                 else if (t.estado === 'en_proceso') colProceso.appendChild(tempDiv.firstElementChild);
                 else colCerrado.appendChild(tempDiv.firstElementChild);
 
-                // LISTA
-                tbT.innerHTML += `<tr><td class="ps-4 fw-bold">#${t.id} ${t.titulo}</td><td>${t.creador_nombre}</td><td>${t.prioridad}</td><td>${t.estado}</td><td class="text-end"><button class="btn btn-sm btn-primary" onclick="openChat(${t.id}, '${t.titulo}', '${t.estado}')">Ver</button></td></tr>`;
+                tbT.innerHTML += `<tr><td class="ps-4 fw-bold">#${t.id} ${t.titulo}${rating}</td><td>${t.creador_nombre}</td><td>${t.prioridad}</td><td>${t.estado}</td><td class="text-end"><button class="btn btn-sm btn-primary" onclick="openChat(${t.id}, '${t.titulo}', '${t.estado}', ${t.valoracion})">Ver</button></td></tr>`;
             });
 
             const elTotal = document.getElementById('k-total'); if (elTotal) elTotal.innerText = stats.total;
@@ -546,37 +627,74 @@
         function drag(ev) { ev.dataTransfer.setData("text", ev.target.id); }
         async function drop(ev, newStatus) {
             ev.preventDefault(); ev.currentTarget.classList.remove('drag-over');
-            const ticketIdStr = ev.dataTransfer.getData("text");
-            const ticketId = ticketIdStr.replace('ticket-', '');
-            const card = document.getElementById(ticketIdStr);
-            ev.currentTarget.appendChild(card);
-            try {
-                await fetch(`${API}/tickets/${ticketId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ estado: newStatus, usuario_id: USER.id }) });
-                const Toast = Swal.mixin({ toast: true, position: 'top-end', showConfirmButton: false, timer: 3000, timerProgressBar: true });
-                Toast.fire({ icon: 'success', title: `Ticket movido a: ${newStatus.replace('_', ' ').toUpperCase()}` });
-            } catch (err) { Swal.fire('Error', 'Fallo al actualizar', 'error'); loadAll(); }
+            const ticketId = ev.dataTransfer.getData("text").replace('ticket-', '');
+            ev.currentTarget.appendChild(document.getElementById('ticket-' + ticketId));
+            await fetch(`${API}/tickets/${ticketId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ estado: newStatus, usuario_id: USER.id }) });
+            loadAll();
         }
 
-        document.getElementById('globalSearch').addEventListener('keyup', function (e) {
-            const term = e.target.value.toLowerCase();
-            document.querySelectorAll('.kanban-card').forEach(card => card.style.display = card.innerText.toLowerCase().includes(term) ? 'block' : 'none');
-            document.querySelectorAll('#ticketTable tr').forEach(row => row.style.display = row.innerText.toLowerCase().includes(term) ? '' : 'none');
-        });
-
-        async function openChat(id, title, status) {
-            CUR_ID = id; document.getElementById('cTitle').innerText = title; document.getElementById('cId').innerText = id;
+        // CHAT & RATING
+        async function openChat(id, title, status, rating) {
+            CUR_ID = id; CUR_STATUS = status; document.getElementById('cTitle').innerText = title; document.getElementById('cId').innerText = id;
             const actions = document.getElementById('chatActions'); actions.innerHTML = '';
+            const ratingPanel = document.getElementById('ratingPanel');
+
+            // Acciones Técnicas
             if (USER.rol !== 'usuario') {
                 if (status === 'abierto') actions.innerHTML = `<button class="btn btn-sm btn-warning text-white" onclick="updSt(${id}, 'en_proceso')">Tomar</button>`;
                 if (status === 'en_proceso') actions.innerHTML = `<button class="btn btn-sm btn-success" onclick="updSt(${id}, 'cerrado')">Finalizar</button>`;
                 if (status === 'cerrado') actions.innerHTML = `<button class="btn btn-sm btn-secondary" onclick="updSt(${id}, 'abierto')">Reabrir</button>`;
             }
+
+            // Panel de Estrellas (Solo si cerrado)
+            ratingPanel.style.display = (status === 'cerrado') ? 'block' : 'none';
+            if (status === 'cerrado') {
+                const starsDiv = document.getElementById('starsContainer');
+                if (rating > 0) {
+                    starsDiv.innerHTML = `<span class="text-warning fs-3">${'★'.repeat(rating)}</span><br><small>Gracias por tu voto</small>`;
+                } else {
+                    starsDiv.innerHTML = [1, 2, 3, 4, 5].map(i => `<i class="far fa-star rating-stars" onclick="rateTicket(${i})"></i>`).join(' ');
+                }
+            }
+
             new bootstrap.Modal(document.getElementById('chatModal')).show();
             loadMsgs(); if (POLLING) clearInterval(POLLING); POLLING = setInterval(loadMsgs, 3000);
         }
-        document.getElementById('chatModal').addEventListener('hidden.bs.modal', () => { if (POLLING) clearInterval(POLLING); CUR_ID = null; loadAll(); });
 
-        async function loadMsgs() { if (!CUR_ID) return; const msgs = await fetch(`${API}/tickets/${CUR_ID}/mensajes`).then(r => r.json()); const box = document.getElementById('chatBox'); if (box.childElementCount !== msgs.length) { box.innerHTML = ''; msgs.forEach(m => { if (m.tipo === 'evento') box.innerHTML += `<div class="msg system">${m.contenido}</div>`; else { const isMe = m.autor_id === USER.id; let c = m.contenido; if (m.tipo === 'imagen') c = `<img src="${m.contenido}" class="chat-img" onclick="window.open(this.src)">`; else if (m.tipo === 'archivo') c = `<a href="${m.contenido}" download class="chat-file"><i class="fas fa-file"></i> Archivo</a>`; box.innerHTML += `<div class="msg ${isMe ? 'me' : 'other'}"><strong>${m.autor_nombre}</strong><br>${c}</div>`; } }); box.scrollTop = box.scrollHeight; } }
+        async function rateTicket(stars) {
+            await fetch(`${API}/tickets/${CUR_ID}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ valoracion: stars, usuario_id: USER.id }) });
+            document.getElementById('starsContainer').innerHTML = `<span class="text-warning fs-3">${'★'.repeat(stars)}</span><br><small class="text-muted">¡Gracias!</small>`;
+            loadAll(); // Refrescar para ver las estrellas fuera
+        }
+
+        async function loadMsgs() {
+            if (!CUR_ID) return;
+            const msgs = await fetch(`${API}/tickets/${CUR_ID}/mensajes`).then(r => r.json());
+            const box = document.getElementById('chatBox');
+            if (box.childElementCount !== msgs.length) {
+                box.innerHTML = '';
+                // Play sound if new message (simple logic)
+                if (msgs.length > 0) try { document.getElementById('notifSound').play(); } catch (e) { }
+
+                msgs.forEach(m => {
+                    if (m.tipo === 'evento') box.innerHTML += `<div class="msg system">${m.contenido}</div>`;
+                    else {
+                        const isMe = m.autor_id === USER.id;
+                        let c = m.contenido;
+                        if (m.tipo === 'imagen') c = `<img src="${m.contenido}" class="chat-img" onclick="window.open(this.src)">`;
+                        else if (m.tipo === 'archivo') c = `<a href="${m.contenido}" download class="chat-file"><i class="fas fa-file"></i> Archivo</a>`;
+                        box.innerHTML += `<div class="msg ${isMe ? 'me' : 'other'}"><strong>${m.autor_nombre}</strong><br>${c}</div>`;
+                    }
+                });
+                box.scrollTop = box.scrollHeight;
+            }
+        }
+
+        // Formularios
+        document.getElementById('faqForm').addEventListener('submit', async (e) => { e.preventDefault(); await fetch(API + '/faqs', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ titulo: document.getElementById('ftit').value, categoria: document.getElementById('fcat').value, contenido: document.getElementById('fcont').value, usuario_id: USER.id }) }); e.target.reset(); loadAll(); });
+        async function delFaq(id) { if (confirm('¿Borrar?')) { await fetch(`${API}/faqs/${id}`, { method: 'DELETE' }); loadAll(); } }
+
+        // Helpers (Iguales)
         document.getElementById('chatForm').addEventListener('submit', (e) => { e.preventDefault(); const t = document.getElementById('cInput').value; if (t) sendMsg(t, 'texto'); });
         async function sendMsg(c, t) { await fetch(`${API}/tickets/${CUR_ID}/mensajes`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ usuario_id: USER.id, contenido: c, tipo: t }) }); document.getElementById('cInput').value = ''; loadMsgs(); }
         function uploadFile(i) { const f = i.files[0]; if (!f) return; const r = new FileReader(); r.onload = e => { const res = e.target.result; if (f.type.startsWith('image/')) { const im = new Image(); im.src = res; im.onload = () => { const c = document.createElement('canvas'), ctx = c.getContext('2d'), sc = 800 / im.width; c.width = 800; c.height = im.height * sc; ctx.drawImage(im, 0, 0, c.width, c.height); sendMsg(c.toDataURL('image/jpeg', 0.7), 'imagen'); } } else sendMsg(res, 'archivo'); }; r.readAsDataURL(f); i.value = ''; }
@@ -590,6 +708,8 @@
         function toggleTheme() { const h = document.documentElement; h.setAttribute('data-bs-theme', h.getAttribute('data-bs-theme') === 'dark' ? 'light' : 'dark'); }
         function initChart() { const ctx = document.getElementById('statusChart').getContext('2d'); CHART = new Chart(ctx, { type: 'doughnut', data: { labels: ['Abierto', 'Cerrado'], datasets: [{ data: [0, 0], backgroundColor: ['#ffc107', '#198754'], borderWidth: 0 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, cutout: '75%' } }); }
         function updateChart(o, c) { if (CHART) { CHART.data.datasets[0].data = [o, c]; CHART.update(); } }
+        // Buscador
+        document.getElementById('globalSearch').addEventListener('keyup', function (e) { const term = e.target.value.toLowerCase(); document.querySelectorAll('.kanban-card').forEach(card => card.style.display = card.innerText.toLowerCase().includes(term) ? 'block' : 'none'); document.querySelectorAll('#ticketTable tr').forEach(row => row.style.display = row.innerText.toLowerCase().includes(term) ? '' : 'none'); });
     </script>
 </body>
 
